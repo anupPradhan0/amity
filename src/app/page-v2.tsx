@@ -72,7 +72,10 @@ export default function PageV2() {
                     <br />
                     Merch
                   </h2>
-                  <p className="mt-4 text-sm text-black/70">Level up your online lecture fits.</p>
+                  <div className="mt-4 flex items-center justify-between">
+                    <p className="text-sm text-black/70">Level up your online lecture fits.</p>
+                    <span className="bg-black text-white text-xs font-bold px-3 py-1 rounded-full">₹1,499</span>
+                  </div>
                 </div>
                 <div className="mt-6 bg-white rounded-xl overflow-hidden shadow-sm">
                   <img
@@ -104,9 +107,14 @@ export default function PageV2() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
-                  className="bg-[#1f1f1f] rounded-xl p-6 min-h-[210px]"
+                  className="bg-[#1f1f1f] rounded-xl p-6 min-h-[210px] flex flex-col justify-between"
                 >
-                  <h3 className="text-2xl font-display font-semibold">The Classic Tee</h3>
+                  <div>
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-2xl font-display font-semibold">The Classic Tee</h3>
+                      <span className="bg-[#1de35a] text-black text-xs font-bold px-2 py-1 rounded-md">₹599</span>
+                    </div>
+                  </div>
                   <div className="mt-4 bg-[#111111] rounded-xl overflow-hidden">
                     <img
                       src="/assets/amity_tee.png"
@@ -126,9 +134,12 @@ export default function PageV2() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.3 }}
-                  className="bg-[#1f1f1f] rounded-xl p-6 min-h-[210px]"
+                  className="bg-[#1f1f1f] rounded-xl p-6 min-h-[210px] flex flex-col justify-between"
                 >
-                  <h3 className="text-2xl font-display font-semibold">Caps & Accessories</h3>
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-2xl font-display font-semibold">Caps & Accessories</h3>
+                    <span className="bg-white text-black text-xs font-bold px-2 py-1 rounded-md">From ₹399</span>
+                  </div>
                   <div className="mt-4 bg-[#111111] rounded-xl overflow-hidden shadow-inner">
                     <img
                       src="/assets/amity_cap.png"
@@ -176,16 +187,19 @@ export default function PageV2() {
                 title: 'Tops & Tees',
                 bg: '#1f1f1f',
                 img: '/assets/amity_tee.png',
+                price: 'From ₹599',
               },
               {
                 title: 'Hoodies',
                 bg: '#1f1f1f',
                 img: '/assets/amity_hero_hoodie.png',
+                price: 'From ₹1,299',
               },
               {
                 title: 'Accessories',
                 bg: '#1f1f1f',
                 img: '/assets/amity_cap.png',
+                price: 'From ₹399',
               },
             ].map((cat, index) => (
               <motion.div 
@@ -209,7 +223,10 @@ export default function PageV2() {
                 {/* Dark gradient overlay at the bottom so text is easily readable */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
                 <div className="relative z-10 w-full transform transition-transform duration-500 group-hover:-translate-y-2">
-                  <h3 className="text-2xl font-bold font-display text-white">{cat.title}</h3>
+                  <div className="flex justify-between items-end">
+                    <h3 className="text-2xl font-bold font-display text-white">{cat.title}</h3>
+                    <span className="text-xs bg-white/10 text-white px-2 py-1 flex items-center rounded backdrop-blur-md font-semibold">{cat.price}</span>
+                  </div>
                   <div className="text-sm mt-2 font-medium text-[#1de35a] flex items-center gap-2 opacity-0 -translate-x-4 transition-all duration-500 group-hover:opacity-100 group-hover:translate-x-0">
                     Browse collection <span className="text-lg">→</span>
                   </div>
