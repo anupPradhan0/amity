@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion, useReducedMotion, Variants } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -9,7 +9,7 @@ const AVATAR_SEEDS = ['face1', 'face2', 'face3']
 export default function HeroSection() {
   const shouldReduce = useReducedMotion()
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -20,7 +20,7 @@ export default function HeroSection() {
     },
   }
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 50, rotate: -2 },
     visible: { 
       opacity: 1, 
@@ -36,20 +36,20 @@ export default function HeroSection() {
         <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-16 lg:gap-8 items-center">
 
           {/* LEFT — Content */}
-          <motion.div 
+            <motion.div 
             className="flex flex-col gap-8 max-w-2xl relative z-20"
-            variants={shouldReduce ? {} : containerVariants}
+            variants={shouldReduce ? undefined : containerVariants}
             initial="hidden"
             animate="visible"
           >
-            <motion.div variants={shouldReduce ? {} : itemVariants}>
+            <motion.div variants={shouldReduce ? undefined : itemVariants}>
               <div className="inline-block bg-yellow text-deep font-display font-black uppercase text-sm tracking-widest py-2 px-5 border-4 border-deep shadow-[4px_4px_0px_0px_rgba(13,27,42,1)] -rotate-2">
                 🔥 Drop 001 — Spring 2025
               </div>
             </motion.div>
 
             <motion.h1
-              variants={shouldReduce ? {} : itemVariants}
+              variants={shouldReduce ? undefined : itemVariants}
               className="font-display font-black text-white uppercase tracking-tighter leading-[0.85] relative"
               style={{ fontSize: 'clamp(4.5rem, 11vw, 8.5rem)' }}
             >
@@ -59,13 +59,13 @@ export default function HeroSection() {
             </motion.h1>
 
             <motion.p
-              variants={shouldReduce ? {} : itemVariants}
+              variants={shouldReduce ? undefined : itemVariants}
               className="text-white text-xl md:text-2xl font-bold leading-snug max-w-lg mt-4 bg-deep p-4 border-4 border-yellow shadow-[8px_8px_0px_0px_rgba(245,197,24,1)]"
             >
               Official Amity merch. Hoodies, tees, caps — designed for students, by students. No cap.
             </motion.p>
 
-            <motion.div variants={shouldReduce ? {} : itemVariants} className="flex flex-wrap items-center gap-6 mt-4">
+            <motion.div variants={shouldReduce ? undefined : itemVariants} className="flex flex-wrap items-center gap-6 mt-4">
               <Button variant="default" size="lg" className="group">
                 Explore Collection
                 <ArrowRight size={22} className="transition-transform group-hover:translate-x-2" strokeWidth={3} />
@@ -73,7 +73,7 @@ export default function HeroSection() {
             </motion.div>
 
             {/* Social proof */}
-            <motion.div variants={shouldReduce ? {} : itemVariants} className="flex items-center gap-4 mt-6">
+            <motion.div variants={shouldReduce ? undefined : itemVariants} className="flex items-center gap-4 mt-6">
               <div className="flex -space-x-4">
                 {AVATAR_SEEDS.map((seed, i) => (
                   <img

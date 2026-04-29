@@ -53,7 +53,9 @@ export default function PageV2() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#2f2f2f] text-white font-body">
+    <div className="relative min-h-screen bg-[#2f2f2f] text-white font-body overflow-hidden">
+      {/* immersive animated background */}
+      <div className="absolute inset-0 -z-20 immersive-blob pointer-events-none" />
       <main className="max-w-6xl mx-auto px-6 py-10 space-y-12">
         <section className="space-y-4">
           <div className="text-sm text-white/70">Fresh Heat</div>
