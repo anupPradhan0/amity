@@ -45,18 +45,18 @@ export default function PageV2() {
   const [activeColor, setActiveColor] = useState({ name: 'Amity Yellow', color: '#F5C518', text: '#111111', desc: 'Bold Energy' });
 
   const colors = [
-    { name: 'Vintage Grey', color: '#f7f1e8', text: '#111111', desc: 'Classic University Tone' },
-    { name: 'Cotton Warm', color: '#f4efe2', text: '#111111', desc: 'Premium Fabric Feel' },
-    { name: 'Charcoal', color: '#5a5454', text: '#f7f1e8', desc: 'Sleek Streetwear Vibe' },
-    { name: 'Night Black', color: '#1a1a1a', text: '#f7f1e8', desc: 'The Essential Look' },
-    { name: 'Campus Green', color: '#1de35a', text: '#1a1a1a', desc: 'Our Signature Color' },
+    { name: 'Vintage Grey', color: '#f7f1e8', text: '#111111', desc: 'Old Money Campus' },
+    { name: 'Cotton Warm', color: '#f4efe2', text: '#111111', desc: 'Max Comfort' },
+    { name: 'Charcoal', color: '#5a5454', text: '#f7f1e8', desc: 'Lowkey Fits' },
+    { name: 'Night Black', color: '#1a1a1a', text: '#f7f1e8', desc: 'The Daily Uniform' },
+    { name: 'Campus Green', color: '#1de35a', text: '#1a1a1a', desc: 'Iconic Amity' },
   ];
 
   return (
     <div className="min-h-screen bg-[#2f2f2f] text-white font-body">
       <main className="max-w-6xl mx-auto px-6 py-10 space-y-12">
         <section className="space-y-4">
-          <div className="text-sm text-white/70">Featured</div>
+          <div className="text-sm text-white/70">Fresh Heat</div>
           <div className="bg-[#3a3a3a] rounded-2xl p-6 shadow-lg">
             <div className="grid gap-6 lg:grid-cols-[1fr_1fr_1fr]">
               <motion.article 
@@ -66,13 +66,13 @@ export default function PageV2() {
                 className="bg-[#f4efe2] text-[#151515] rounded-xl p-6 flex flex-col justify-between min-h-[360px]"
               >
                 <div>
-                  <div className="text-xs uppercase tracking-[0.3em] text-black/60">AMITY CAMPUS</div>
+                  <div className="text-xs uppercase tracking-[0.3em] text-black/60">AMITY UNIVERSITY ONLINE</div>
                   <h2 className="mt-6 text-3xl font-display font-semibold leading-tight">
-                    Official
+                    Campus
                     <br />
                     Merch
                   </h2>
-                  <p className="mt-4 text-sm text-black/70">Elevating standard university apparel</p>
+                  <p className="mt-4 text-sm text-black/70">Level up your online lecture fits.</p>
                 </div>
                 <div className="mt-6 bg-white rounded-xl overflow-hidden shadow-sm">
                   <img
@@ -94,7 +94,7 @@ export default function PageV2() {
                   <h3 className="text-3xl font-display font-semibold leading-tight">Drop 001</h3>
                   <p className="mt-6 text-xs uppercase tracking-[0.3em] text-white/70">April 2026</p>
                   <p className="mt-3 text-sm text-white/80 max-w-sm">
-                    Grab the latest premium gear before it's gone forever.
+                    Cop the latest streetwear essentials before they sell out. No restocks.
                   </p>
                   <div className="mt-6">
                     <GradientBars bars={gradientSets[0]} />
@@ -147,12 +147,12 @@ export default function PageV2() {
                   transition={{ duration: 0.5, delay: 0.4 }}
                   className="bg-[#f4efe2] text-[#151515] rounded-xl p-6 min-h-[210px]"
                 >
-                  <div className="text-xs uppercase tracking-[0.3em] text-black/60">Behind the Scenes</div>
+                  <div className="text-xs uppercase tracking-[0.3em] text-black/60">Behind the fit</div>
                   <h3 className="mt-4 text-lg font-display font-semibold">
-                    The Perfect Fabric
+                    Top-Tier Quality
                   </h3>
                   <p className="mt-3 text-sm text-black/70">
-                    Premium cotton blends sourced ethically.
+                    Insanely soft cotton blends. Peak comfort for long study sessions.
                   </p>
                   <div className="mt-6 bg-[#111111] rounded-xl overflow-hidden">
                     <img
@@ -220,25 +220,25 @@ export default function PageV2() {
         </section>
 
         <section className="space-y-4">
-          <div className="text-sm text-white/70">Offers</div>
+          <div className="text-sm text-white/70">Perks</div>
           <div className="bg-[#3a3a3a] rounded-2xl p-6">
             <div className="bg-[#1f1f1f] rounded-2xl p-8 grid lg:grid-cols-[1fr_1.2fr] gap-8 items-center">
               <div>
                 <h3 className="text-3xl font-display font-semibold leading-tight text-[#1de35a]">
                   Student
                   <br />
-                  Exclusives
+                  Only Codes
                 </h3>
                 <p className="mt-4 text-sm text-white/70">
-                  Because you're at Amity, you get the best deals on campus merch. Stock up for the semester with fresh drops and huge discounts.
+                  You're part of the fam. Unlock crazy discounts and early access to all Amity Online merchandise drops. Cop the drip without breaking the bank.
                 </p>
                 <ul className="mt-4 text-xs text-white/60 space-y-2">
-                  <li>20% off all Hoodies with valid student ID.</li>
-                  <li>Buy 2 Tops & Tees, get a free accessory.</li>
-                  <li>Free on-campus delivery.</li>
+                  <li>✨ 20% off all Hoodies with your student ID.</li>
+                  <li>🔥 Buy 2 Tops & Tees, get endless clout.</li>
+                  <li>🚚 Free instant shipping on all semester drops.</li>
                 </ul>
                 <button className="mt-6 rounded-full bg-[#f4efe2] text-[#151515] text-sm font-semibold px-5 py-2 hover:bg-white transition-colors">
-                  Claim Offer
+                  Unlock Discount
                 </button>
               </div>
               <div className="relative bg-[#171717] rounded-2xl p-6 overflow-hidden min-h-[250px] flex items-center justify-center">
@@ -258,7 +258,7 @@ export default function PageV2() {
         </section>
 
         <section className="space-y-6 pt-10">
-          <div className="text-sm text-white/70">Join the Team</div>
+          <div className="text-sm text-white/70">Join the Movement</div>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
             
             {/* Left Card: Ambassador */}
@@ -271,21 +271,21 @@ export default function PageV2() {
               <div>
                 <div className="flex justify-end mb-6">
                   <span className="bg-[#cdffce] text-[#0f5120] text-xs font-semibold px-3 py-1 rounded-full">
-                    Most Wanted
+                    We're Hiring
                   </span>
                 </div>
                 <h3 className="text-4xl lg:text-5xl font-display font-medium tracking-tight mb-4">Brand Ambassador</h3>
                 <div className="flex items-center gap-2 text-sm font-medium text-black/70">
                   <div className="w-2 h-2 rounded-full bg-[#6b5cff]"></div>
-                  Noida Campus
+                  All Campuses & Online
                 </div>
               </div>
               <div className="flex items-center gap-4 mt-8">
                 <button className="flex-1 bg-[#1a1a1a] text-white rounded-full py-3 text-sm font-semibold hover:bg-black transition-colors">
-                  Apply
+                  Join Discord
                 </button>
                 <button className="flex-1 bg-[#e5e5e5] text-black rounded-full py-3 text-sm font-semibold hover:bg-[#d4d4d4] transition-colors">
-                  Share
+                  Share Info
                 </button>
               </div>
             </motion.div>
@@ -302,14 +302,14 @@ export default function PageV2() {
                 className="bg-[#6c625c] text-white rounded-[24px] p-8 min-h-[250px] relative overflow-hidden flex flex-col justify-between"
               >
                 <div className="flex items-center gap-2 mb-12">
-                  <span className="font-semibold text-lg">Amity</span>
+                  <span className="font-semibold text-lg">Amity Online</span>
                   <div className="w-4 h-4 bg-white/80 rounded-sm"></div>
                 </div>
                 <div className="flex justify-between items-end relative z-10 w-full mb-1">
                   <div className="max-w-[50%]">
-                    <h3 className="text-4xl font-display font-light tracking-tight mb-3">Top student talent</h3>
+                    <h3 className="text-4xl font-display font-light tracking-tight mb-3">Level up your portfolio</h3>
                     <p className="text-sm text-white/80 leading-relaxed">
-                      We nurture and develop our creative community from within the campus.
+                      Get paid to rep Amity online. We build our community directly from the student body.
                     </p>
                   </div>
                   <div className="w-[140px] md:w-[180px] shrink-0 mb-[-32px] mr-[-32px] md:mr-0 z-0 border-b-4 border-[#8e5cff]">
@@ -394,11 +394,11 @@ export default function PageV2() {
             {/* Selection Grid */}
             <div className="grid grid-cols-2 gap-4">
               <button
-                onClick={() => setActiveColor({ name: 'Campus Yellow', color: '#F5C518', text: '#111111', desc: 'Bold Energy' })}
+                onClick={() => setActiveColor({ name: 'Amity Yellow', color: '#F5C518', text: '#111111', desc: 'Bold Energy' })}
                 className={`rounded-xl p-6 flex flex-[1] min-h-[150px] flex-col justify-end text-left transition-all duration-300 ${activeColor.color === '#F5C518' ? 'ring-2 ring-white ring-offset-2 ring-offset-black scale-[0.98]' : 'hover:scale-[1.02]'}`}
                 style={{ background: '#F5C518', color: '#111111' }}
               >
-                <div className="text-sm font-semibold">Campus Yellow</div>
+                <div className="text-sm font-semibold">Amity Yellow</div>
               </button>
 
               {colors.map((swatch) => (
@@ -416,23 +416,23 @@ export default function PageV2() {
         </section>
 
         <section className="space-y-4">
-          <div className="text-sm text-white/70">Community Love</div>
+          <div className="text-sm text-white/70">What the Campus is Saying</div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
-                text: "The quality of the Drop 001 hoodie is surreal. Literally live in it during my 8AM lectures.",
+                text: "The quality of the Drop 001 hoodie is actually insane. Literally living in it while attending my online lectures.",
                 author: "Sarah J.",
-                course: "B.Tech CSE '25",
+                course: "BCA Online '26",
               },
               {
-                text: "Finally, campus merch that I actually want to wear outside of the university. The aesthetic is perfect.",
+                text: "W fit. Finally, uni merch that I actually want to flex outside. The aesthetic is perfectly lowkey.",
                 author: "Rahul M.",
-                course: "BBA '26",
+                course: "BBA Online '25",
               },
               {
-                text: "Delivery was quick right to my hostel block, and the fabric feels premium. Def getting the cap next.",
-                author: "Neha K.",
-                course: "B.Des '27",
+                text: "Delivery was quick and the fabric feels premium. Def getting the cap next to complete the fit.",
+                author: "Aisha K.",
+                course: "MCA Online '25",
               }
             ].map((review, idx) => (
               <motion.div
@@ -458,12 +458,12 @@ export default function PageV2() {
             <div className="md:col-span-4 space-y-6">
               <h2 className="text-4xl font-display font-bold tracking-tight text-white mb-6">AMITY</h2>
               <p className="text-white/60 max-w-sm leading-relaxed text-sm">
-                Elevating campus apparel with premium materials, modern streetwear aesthetics, and exclusive student drops. Wear your pride.
+                Premium streetwear that actually looks good on stream. Elevating the standard for online university fits with heavy cotton blends and lowkey aesthetics. Flex your campus pride.
               </p>
               <div className="flex flex-col gap-3 mt-8">
-                <span className="text-xs uppercase tracking-widest text-[#1de35a] font-bold">Newsletter</span>
+                <span className="text-xs uppercase tracking-widest text-[#1de35a] font-bold">Lock in for Drops</span>
                 <div className="flex gap-2">
-                  <input type="email" placeholder="Student Email" className="bg-[#1f1f1f] text-white rounded-lg px-4 py-3 text-sm flex-1 outline-none focus:ring-1 focus:ring-[#1de35a] border border-white/5" />
+                  <input type="email" placeholder="student@amity.edu" className="bg-[#1f1f1f] text-white rounded-lg px-4 py-3 text-sm flex-1 outline-none focus:ring-1 focus:ring-[#1de35a] border border-white/5" />
                   <button className="bg-[#1de35a] text-black font-semibold px-6 py-3 rounded-lg hover:bg-white transition-colors text-sm">Subscribe</button>
                 </div>
               </div>
@@ -507,10 +507,10 @@ export default function PageV2() {
           </div>
           
           <div className="bg-[#1a1a1a] mx-[-1.5rem] px-6 py-6 md:py-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/40">
-            <p>© {new Date().getFullYear()} Amity Campus Merch. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Amity Online Merch. All rights reserved.</p>
             <div className="flex gap-6 font-medium">
-              <a href="#" className="hover:text-white transition-colors">Noida, IN</a>
-              <a href="#" className="hover:text-white transition-colors">amity.edu</a>
+              <a href="#" className="hover:text-white transition-colors">Global Campus</a>
+              <a href="#" className="hover:text-white transition-colors">amityonline.com</a>
             </div>
           </div>
         </section>
