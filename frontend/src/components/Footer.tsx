@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
-import logo from "@/assets/cm-logo.png";
 import { Instagram, Twitter, Youtube, Mail } from "lucide-react";
+
+const LOGO_URL = "/amity-university-logo.png";
 
 export default function Footer() {
   return (
@@ -8,7 +9,14 @@ export default function Footer() {
       <div className="container py-16 grid gap-10 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <img src={logo} alt="Campus Merch" className="h-14 w-auto bg-background rounded-lg p-1" loading="lazy" width={56} height={56} />
+            <img
+              src={LOGO_URL}
+              alt="Amity University — Campus Merch"
+              className="h-16 w-auto object-contain object-left drop-shadow-md"
+              loading="lazy"
+              width={56}
+              height={64}
+            />
             <div>
               <div className="font-display text-xl font-bold text-secondary">Campus Merch</div>
               <div className="text-xs opacity-80">Powered by Amity Online</div>

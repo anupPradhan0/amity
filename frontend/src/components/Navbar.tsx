@@ -2,8 +2,9 @@ import { Link, useLocation } from "react-router-dom";
 import { ShoppingBag, Search, Heart, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useCart } from "@/store/cart";
-import logo from "@/assets/cm-logo.png";
 import { categories } from "@/data/products";
+
+const LOGO_URL = "/amity-university-logo.png";
 
 export default function Navbar() {
   const { count, setOpen } = useCart();
@@ -43,9 +44,17 @@ export default function Navbar() {
             {mobileOpen ? <X /> : <Menu />}
           </button>
 
-          <Link to="/" className="flex items-center gap-2">
-            <img src={logo} alt="Campus Merch" className="h-10 lg:h-12 w-auto" width={48} height={48} />
-            <span className="hidden sm:inline font-display font-bold text-lg lg:text-xl text-navy">Campus Merch</span>
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <img
+              src={LOGO_URL}
+              alt="Amity University — Campus Merch"
+              className="h-10 lg:h-11 w-auto object-contain object-left drop-shadow-sm transition-transform group-hover:scale-[1.02]"
+              width={44}
+              height={52}
+            />
+            <span className="hidden sm:inline font-display font-bold text-lg lg:text-xl text-navy leading-tight">
+              Campus Merch
+            </span>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-8 text-sm font-medium">

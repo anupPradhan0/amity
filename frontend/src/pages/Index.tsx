@@ -11,7 +11,6 @@ import learnerGroup from "@/assets/learner-group.jpg";
 import rackApparel from "@/assets/rack-apparel.jpg";
 import rackDrinkware from "@/assets/rack-drinkware.jpg";
 import rackAccessories from "@/assets/rack-accessories.jpg";
-import logo from "@/assets/cm-logo.png";
 
 const categoryImages: Record<string, string> = {
   apparels: rackApparel,
@@ -82,7 +81,14 @@ export default function Index() {
                 <div className="font-display text-2xl mt-1.5 drop-shadow-md">Aarav, Priya &amp; Rohan</div>
               </div>
             </div>
-            <img src={logo} alt="" className="absolute -top-8 -left-8 h-28 rotate-[-12deg] animate-float-slow drop-shadow-xl" loading="lazy" width={112} height={112} />
+            <img
+              src="/amity-university-logo.png"
+              alt="Amity University"
+              className="absolute -top-10 -left-6 h-32 w-auto max-w-[140px] object-contain rotate-[-10deg] animate-float-slow drop-shadow-xl"
+              loading="lazy"
+              width={120}
+              height={140}
+            />
           </div>
         </div>
 
