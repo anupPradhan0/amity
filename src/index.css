@@ -83,7 +83,17 @@
 
 @layer base {
   * { @apply border-border; }
-  html { scroll-behavior: smooth; }
+  /* Clip horizontal overflow at the root — avoids `overflow-x-hidden` on layout children,
+     which can break document scrolling / sticky in Safari & Firefox. */
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+  @supports (overflow: clip) {
+    html {
+      overflow-x: clip;
+    }
+  }
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, sans-serif;

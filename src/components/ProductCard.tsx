@@ -10,7 +10,7 @@ export default function ProductCard({ product, index = 0 }: { product: Product; 
 
   return (
     <div
-      className="group relative bg-card rounded-xl overflow-hidden border border-border hover:border-secondary transition-all duration-500 shadow-card-soft hover:-translate-y-1 animate-fade-in-up opacity-0"
+      className="group relative bg-card rounded-2xl overflow-hidden border border-border/90 hover:border-secondary/80 transition-all duration-500 shadow-card-soft hover:shadow-hero hover:-translate-y-1 animate-fade-in-up opacity-0"
       style={{ animationDelay: `${(index % 8) * 60}ms`, animationFillMode: "forwards" }}
     >
       <Link to={`/product/${product.slug}`} className="block relative aspect-[4/5] overflow-hidden bg-muted">
@@ -40,7 +40,7 @@ export default function ProductCard({ product, index = 0 }: { product: Product; 
         <Heart className="h-4 w-4" fill={isWished ? "currentColor" : "none"} />
       </button>
 
-      <div className="p-4">
+      <div className="p-4 sm:p-5">
         <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{product.brand}</div>
         <Link to={`/product/${product.slug}`}>
           <h3 className="mt-1 text-sm font-semibold line-clamp-2 group-hover:text-primary-glow min-h-[40px]">{product.name}</h3>
