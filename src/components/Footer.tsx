@@ -38,11 +38,12 @@ export default function Footer() {
         <div>
           <h4 className="font-display text-secondary mb-4">Help</h4>
           <ul className="space-y-2 text-sm opacity-90">
-            <li><a href="#" className="hover:text-secondary">Track Order</a></li>
-            <li><a href="#" className="hover:text-secondary">Shipping & Returns</a></li>
-            <li><a href="#" className="hover:text-secondary">Size Guide</a></li>
-            <li><a href="#" className="hover:text-secondary">FAQs</a></li>
-            <li><a href="#" className="hover:text-secondary">Contact Us</a></li>
+            <li><Link to="/track-order" className="hover:text-secondary">Track order</Link></li>
+            <li><Link to="/shipping-returns" className="hover:text-secondary">Shipping &amp; returns</Link></li>
+            <li><Link to="/size-guide" className="hover:text-secondary">Size guide</Link></li>
+            <li><Link to="/faq" className="hover:text-secondary">FAQs</Link></li>
+            <li><Link to="/contact" className="hover:text-secondary">Contact us</Link></li>
+            <li><Link to="/sign-in" className="hover:text-secondary">Sign in</Link></li>
           </ul>
         </div>
 
@@ -56,9 +57,22 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t border-secondary/10">
-        <div className="container py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs opacity-70">
-          <p>© {new Date().getFullYear()} Campus Merch — Amity Online. All rights reserved.</p>
-          <p>Made with care in Noida, India.</p>
+        <div className="container py-5 flex flex-col gap-3 text-xs opacity-70">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1">
+            <Link to="/privacy" className="hover:text-secondary transition-colors">
+              Privacy
+            </Link>
+            <span className="opacity-40" aria-hidden>
+              ·
+            </span>
+            <Link to="/terms" className="hover:text-secondary transition-colors">
+              Terms
+            </Link>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p>© {new Date().getFullYear()} Campus Merch — Amity Online. All rights reserved.</p>
+            <p>Made with care in Noida, India.</p>
+          </div>
         </div>
       </div>
     </footer>

@@ -58,6 +58,9 @@ export default function Navbar() {
           </nav>
 
           <div className="flex items-center gap-1 sm:gap-2">
+            <Link to="/sign-in" className="hidden sm:inline-flex text-sm font-medium text-muted-foreground hover:text-primary px-2 py-1.5 rounded-md transition-colors">
+              Sign in
+            </Link>
             <button className="p-2 hover:text-secondary transition-colors" aria-label="Search"><Search className="h-5 w-5" /></button>
             <Link to="/wishlist" className="p-2 hover:text-secondary transition-colors hidden sm:block" aria-label="Wishlist"><Heart className="h-5 w-5" /></Link>
             <button onClick={() => setOpen(true)} className="relative p-2 hover:text-secondary transition-colors" aria-label="Cart">
@@ -76,6 +79,7 @@ export default function Navbar() {
               {categories.map(c => <Link key={c.slug} to={`/category/${c.slug}`}>{c.name}</Link>)}
               <Link to="/lookbook">Lookbook</Link>
               <Link to="/store" className="text-secondary-foreground bg-secondary px-3 py-2 rounded-md w-fit">Visit Virtual Store</Link>
+              <Link to="/sign-in">Sign in</Link>
             </div>
           </div>
         )}
