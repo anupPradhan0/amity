@@ -1,0 +1,51 @@
+# Local PostgreSQL for Campus Merch API / future backend.
+# Copy .env.example to .env and adjust. Run: npm run docker:up
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-campus}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-campus}
+      POSTGRES_DB: ${POSTGRES_DB:-campus_merch}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # Match POSTGRES_USER / POSTGRES_DB defaults above (update if you change credentials).
+      test: ["CMD-SHELL", "pg_isready -U campus -d campus_merch"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Lightweight DB UI — http://localhost:${ADMINER_PORT:-5050} (System: PostgreSQL, Server: postgres, user/db from .env)
+  adminer:
+    image: adminer:4
+    restart: unless-stopped
+    ports:
+      - "${ADMINER_PORT:-5050}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-campus}:${POSTGRES_PASSWORD:-campus}@postgres:5432/${POSTGRES_DB:-campus_merch}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-change-in-production}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
