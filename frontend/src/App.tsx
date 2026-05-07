@@ -20,7 +20,9 @@ import FAQPage from "./pages/FAQPage.tsx";
 import ContactPage from "./pages/ContactPage.tsx";
 import PrivacyPage from "./pages/PrivacyPage.tsx";
 import TermsPage from "./pages/TermsPage.tsx";
+import AdminAuthGuard from "./pages/admin/AdminAuthGuard.tsx";
 import AdminLayout from "./pages/admin/AdminLayout.tsx";
+import AdminLoginPage from "./pages/admin/AdminLoginPage.tsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
 import AdminProductsPage from "./pages/admin/AdminProductsPage.tsx";
 import { CartProvider } from "./store/cart.tsx";
@@ -36,9 +38,12 @@ const App = () => (
         <BrandSplash />
         <CartProvider>
           <Routes>
-            <Route path="/auth/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="products" element={<AdminProductsPage />} />
+            <Route path="/auth/admin/login" element={<AdminLoginPage />} />
+            <Route path="/auth/admin" element={<AdminAuthGuard />}>
+              <Route element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="products" element={<AdminProductsPage />} />
+              </Route>
             </Route>
             <Route element={<StorefrontLayout />}>
               <Route index element={<Index />} />

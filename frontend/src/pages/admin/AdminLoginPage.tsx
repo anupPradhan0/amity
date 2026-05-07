@@ -1,20 +1,58 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import PageShell from "@/components/PageShell";
-import { Label } from "@/components/ui/label";
-import { Lock, Loader2 } from "lucide-react";
-
+import { Label } from "@/components/ui/label.tsx";
+import { Loader2, Lock } from "lucide-react";
 import { apiUrl } from "@/lib/apiUrl.ts";
 import { setAccessToken } from "@/lib/authToken.ts";
 
-export default function SignInPage() {
+type LoginOk = {
+  access_token?: string;
+  user?: { id?: number; email?: string; is_admin?: boolean };
+};
+
+export default function AdminLoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  type LocState = { from?: string; reason?: string } | null | undefined;
+
+  function safeAdminPath(p: unknown): string | undefined {
+    if (typeof p !== "string" || !p.startsWith("/auth/admin")) return undefined;
+    if (p.startsWith("/auth/admin/login")) return undefined;
+    return p;
+  }
+
+  const from =
+    safeAdminPath((location.state as LocState)?.from) ?? "/auth/admin";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const toastForReason = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    const s = location.state as LocState;
+    const reason = s?.reason;
+    if (reason !== "not_admin" && reason !== "session") {
+      toastForReason.current = undefined;
+      return;
+    }
+    if (toastForReason.current === reason) return;
+    toastForReason.current = reason;
+
+    const preservedFrom = safeAdminPath(s?.from);
+
+    if (reason === "not_admin") toast.error("Administrator access required.", { id: "admin-not-admin" });
+    if (reason === "session") toast.message("Session expired. Sign in again.", { id: "admin-session" });
+
+    navigate(location.pathname, {
+      replace: true,
+      state: preservedFrom ? { from: preservedFrom } : {},
+    });
+  }, [location.pathname, location.state, navigate]);
 
   function validate(): boolean {
     const next: typeof fieldErrors = {};
@@ -42,32 +80,34 @@ export default function SignInPage() {
         body: JSON.stringify({ email: email.trim(), password }),
       });
 
-      const data = await res.json().catch(() => ({})) as {
-        access_token?: string;
-        detail?: string;
-        message?: string;
-      };
+      const data = (await res.json().catch(() => ({}))) as LoginOk;
 
       if (!res.ok) {
         let msg = "Could not sign in. Try again.";
-        if (typeof data?.detail === "string") msg = data.detail;
-        else if (Array.isArray(data?.detail) && data.detail[0] && typeof data.detail[0] === "object" && "msg" in data.detail[0])
-          msg = String((data.detail[0] as { msg: string }).msg);
-        else if (typeof data?.message === "string") msg = data.message;
+        if (typeof (data as { detail?: string }).detail === "string")
+          msg = (data as { detail: string }).detail;
         else if (res.status === 401) msg = "Invalid email or password.";
         setFormError(msg);
         return;
       }
 
-      if (typeof data.access_token === "string" && data.access_token.length > 0) {
-        setAccessToken(data.access_token);
+      const tok = typeof data.access_token === "string" ? data.access_token : "";
+      if (!tok) {
+        setFormError("Unexpected response from server.");
+        return;
       }
 
-      toast.success("Welcome back");
-      navigate("/", { replace: true });
+      if (!data.user?.is_admin) {
+        setFormError("This account is not an administrator.");
+        return;
+      }
+
+      setAccessToken(tok);
+      toast.success("Welcome to admin");
+      navigate(from, { replace: true });
     } catch {
       setFormError(
-        "Cannot reach the API. Start the backend on port 8080 and keep the Vite dev server running.",
+        "Cannot reach the API. Start the backend on port 8080 (e.g. uvicorn on 8080) and keep the Vite dev server running.",
       );
     } finally {
       setIsSubmitting(false);
@@ -75,13 +115,16 @@ export default function SignInPage() {
   }
 
   return (
-    <PageShell
-      eyebrow="ACCOUNT"
-      title="Sign in"
-      intro="Use your Amity email. Password must be at least 8 characters."
-      crumbs={[{ label: "Home", to: "/" }, { label: "Sign in" }]}
-    >
-      <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-card-soft">
+    <div className="min-h-svh flex flex-col items-center justify-center bg-muted/30 px-4 py-12">
+      <div className="mb-8 flex items-center gap-3">
+        <img src="/amity-university-logo.png" alt="" className="h-10 w-auto" />
+        <div className="text-left">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Campus Merch</p>
+          <p className="font-display text-lg font-semibold">Admin sign in</p>
+        </div>
+      </div>
+
+      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-card-soft">
         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary/15 ring-1 ring-secondary/30 mb-6">
           <Lock className="h-6 w-6 text-secondary" aria-hidden />
         </div>
@@ -97,9 +140,9 @@ export default function SignInPage() {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="signin-email">Email</Label>
+            <Label htmlFor="admin-signin-email">Email</Label>
             <input
-              id="signin-email"
+              id="admin-signin-email"
               type="email"
               name="email"
               value={email}
@@ -107,33 +150,20 @@ export default function SignInPage() {
                 setEmail(e.target.value);
                 if (fieldErrors.email) setFieldErrors(f => ({ ...f, email: undefined }));
               }}
-              placeholder="you@amity.edu"
+              placeholder="admin@amity.edu"
               autoComplete="email"
               aria-invalid={!!fieldErrors.email}
-              aria-describedby={fieldErrors.email ? "signin-email-error" : undefined}
               className={`w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none transition-shadow focus:ring-2 focus:ring-secondary/60 focus:border-secondary ${
                 fieldErrors.email ? "border-destructive" : "border-input"
               }`}
             />
-            {fieldErrors.email && (
-              <p id="signin-email-error" className="text-xs text-destructive">
-                {fieldErrors.email}
-              </p>
-            )}
+            {fieldErrors.email && <p className="text-xs text-destructive">{fieldErrors.email}</p>}
           </div>
 
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between gap-2">
-              <Label htmlFor="signin-password">Password</Label>
-              <Link
-                to="/contact"
-                className="text-xs font-semibold text-primary hover:underline"
-              >
-                Need help?
-              </Link>
-            </div>
+            <Label htmlFor="admin-signin-password">Password</Label>
             <input
-              id="signin-password"
+              id="admin-signin-password"
               type="password"
               name="password"
               value={password}
@@ -145,16 +175,11 @@ export default function SignInPage() {
               autoComplete="current-password"
               minLength={8}
               aria-invalid={!!fieldErrors.password}
-              aria-describedby={fieldErrors.password ? "signin-password-error" : undefined}
               className={`w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none transition-shadow focus:ring-2 focus:ring-secondary/60 focus:border-secondary ${
                 fieldErrors.password ? "border-destructive" : "border-input"
               }`}
             />
-            {fieldErrors.password && (
-              <p id="signin-password-error" className="text-xs text-destructive">
-                {fieldErrors.password}
-              </p>
-            )}
+            {fieldErrors.password && <p className="text-xs text-destructive">{fieldErrors.password}</p>}
           </div>
 
           <button
@@ -168,18 +193,17 @@ export default function SignInPage() {
                 Signing in…
               </>
             ) : (
-              "Sign in"
+              "Sign in to admin"
             )}
           </button>
         </form>
 
         <p className="mt-8 text-center text-sm text-muted-foreground">
-          New to Campus Merch?{" "}
-          <Link to="/" className="font-semibold text-primary cm-link">
-            Continue shopping
+          <Link to="/" className="font-semibold text-primary hover:underline">
+            Back to store
           </Link>
         </p>
       </div>
-    </PageShell>
+    </div>
   );
 }

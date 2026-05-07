@@ -1,23 +1,65 @@
 """Campus Merch FastAPI application."""
 
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.database import Base, engine
-from app.deps import get_db
+from app.database import Base, SessionLocal, engine
+from app.deps import get_current_user, get_db
 from app.models import User
-from app.schemas import LoginRequest, MessageResponse, RegisterRequest, RegisterResponse, TokenResponse, UserPublic
+from app.schemas import AuthSuccessResponse, LoginRequest, MessageResponse, RegisterRequest, UserPublic
 from app.security import create_access_token, hash_password, verify_password
+
+logger = logging.getLogger(__name__)
+
+
+def bootstrap_admin_user(db: Session) -> None:
+    if not settings.admin_email or not settings.admin_password:
+        return
+    if len(settings.admin_password) < 8:
+        logger.warning("ADMIN_PASSWORD must be at least 8 characters; admin bootstrap skipped.")
+        return
+
+    email = settings.admin_email
+    hashed = hash_password(settings.admin_password)
+    user = db.execute(select(User).where(User.email == email)).scalar_one_or_none()
+    try:
+        if user is None:
+            db.add(User(email=email, hashed_password=hashed, is_admin=True))
+            db.commit()
+            logger.info("Bootstrap admin user created.")
+        else:
+            user.hashed_password = hashed
+            user.is_admin = True
+            db.commit()
+            logger.info("Bootstrap admin user synced from environment.")
+    except Exception:
+        db.rollback()
+        logger.exception("Admin bootstrap failed.")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    if "postgresql" in settings.database_url:
+        with engine.begin() as conn:
+            conn.execute(
+                text(
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE"
+                )
+            )
+
+    db = SessionLocal()
+    try:
+        bootstrap_admin_user(db)
+    finally:
+        db.close()
+
     yield
 
 
@@ -42,7 +84,7 @@ def health():
     return MessageResponse(detail="ok")
 
 
-@app.post("/auth/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
+@app.post("/auth/register", response_model=AuthSuccessResponse, status_code=status.HTTP_201_CREATED)
 def register(body: RegisterRequest, db: Session = Depends(get_db)):
     exists = db.execute(select(User).where(User.email == body.email.lower().strip())).scalar_one_or_none()
     if exists:
@@ -60,10 +102,10 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)):
     db.refresh(user)
 
     token = create_access_token(subject=str(user.id))
-    return RegisterResponse(user=UserPublic.model_validate(user), access_token=token, token_type="bearer")
+    return AuthSuccessResponse(user=UserPublic.model_validate(user), access_token=token, token_type="bearer")
 
 
-@app.post("/auth/login", response_model=TokenResponse)
+@app.post("/auth/login", response_model=AuthSuccessResponse)
 def login(body: LoginRequest, db: Session = Depends(get_db)):
     user = db.execute(select(User).where(User.email == body.email.lower().strip())).scalar_one_or_none()
     if user is None or not verify_password(body.password, user.hashed_password):
@@ -73,4 +115,13 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
         )
 
     token = create_access_token(subject=str(user.id))
-    return TokenResponse(access_token=token, token_type="bearer")
+    return AuthSuccessResponse(
+        access_token=token,
+        token_type="bearer",
+        user=UserPublic.model_validate(user),
+    )
+
+
+@app.get("/auth/me", response_model=UserPublic)
+def auth_me(user: User = Depends(get_current_user)):
+    return UserPublic.model_validate(user)

@@ -1,5 +1,5 @@
-import { LayoutDashboard, Package, Store } from "lucide-react";
-import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { LayoutDashboard, LogOut, Package, Store } from "lucide-react";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -17,6 +17,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
+import { clearAccessToken } from "@/lib/authToken.ts";
 
 function adminTitle(pathname: string) {
   if (pathname.includes("/auth/admin/products")) return "Products";
@@ -25,6 +26,7 @@ function adminTitle(pathname: string) {
 
 export default function AdminLayout() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const title = adminTitle(pathname);
   const isDashboard = /^\/auth\/admin\/?$/.test(pathname);
   const isProducts = pathname.includes("/auth/admin/products");
@@ -68,6 +70,19 @@ export default function AdminLayout() {
         </SidebarContent>
         <SidebarFooter className="border-t border-sidebar-border">
           <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                type="button"
+                tooltip="Sign out"
+                onClick={() => {
+                  clearAccessToken();
+                  navigate("/auth/admin/login", { replace: true });
+                }}
+              >
+                <LogOut />
+                <span>Sign out</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild tooltip="Back to store">
                 <Link to="/">
