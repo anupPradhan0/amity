@@ -12,6 +12,6 @@
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f postgres",
-    "api:dev": "cd backend && python3 -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+    "api:dev": "cd backend && python3 -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8080"
   }
 }
