@@ -39,7 +39,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "${API_PORT:-8000}:8000"
+      - "${API_PORT:-8080}:8000"
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-campus}:${POSTGRES_PASSWORD:-campus}@postgres:5432/${POSTGRES_DB:-campus_merch}
       SECRET_KEY: ${SECRET_KEY:-dev-secret-change-in-production}
