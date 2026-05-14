@@ -67,7 +67,7 @@ export default function SignInPage() {
       navigate("/", { replace: true });
     } catch {
       setFormError(
-        "Cannot reach the API. Start the backend on port 8080 and keep the Vite dev server running.",
+        "Cannot reach the API. Ensure the backend is running (port 8000 by default). With Docker, set VITE_API_URL in `.env`.",
       );
     } finally {
       setIsSubmitting(false);

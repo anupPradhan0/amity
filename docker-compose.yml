@@ -1,5 +1,11 @@
-# Local PostgreSQL for Campus Merch API / future backend.
-# Copy .env.example to .env and adjust. Run: npm run docker:up
+# Full local dev stack: Postgres, Adminer, FastAPI (--reload), Vite (HMR).
+# Copy .env.example to .env, then: docker compose up
+#
+# App URLs (defaults): frontend http://localhost:5173  API http://localhost:8000
+# (Vite still listens on 8080 inside the container; host port is FRONTEND_PORT.)
+# Adminer: http://localhost:5050  (server: postgres, user/db from .env)
+#
+# Reset cached frontend node_modules in Docker: docker compose down && docker volume rm amity_frontend_node_modules
 
 services:
   postgres:
@@ -14,14 +20,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      # Match POSTGRES_USER / POSTGRES_DB defaults above (update if you change credentials).
-      test: ["CMD-SHELL", "pg_isready -U campus -d campus_merch"]
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 5s
       timeout: 5s
       retries: 5
       start_period: 10s
 
-  # Lightweight DB UI — http://localhost:${ADMINER_PORT:-5050} (System: PostgreSQL, Server: postgres, user/db from .env)
   adminer:
     image: adminer:4
     restart: unless-stopped
@@ -34,20 +38,45 @@ services:
       ADMINER_DEFAULT_SERVER: postgres
 
   api:
+    image: amity-api:dev
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     restart: unless-stopped
     ports:
-      - "${API_PORT:-8080}:8000"
+      - "${API_PORT:-8000}:8000"
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-campus}:${POSTGRES_PASSWORD:-campus}@postgres:5432/${POSTGRES_DB:-campus_merch}
       SECRET_KEY: ${SECRET_KEY:-dev-secret-change-in-production}
+      ACCESS_TOKEN_EXPIRE_DAYS: ${ACCESS_TOKEN_EXPIRE_DAYS:-7}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    volumes:
+      - ./backend:/srv
     depends_on:
       postgres:
         condition: service_healthy
 
+  frontend:
+    image: amity-frontend:dev
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-5173}:8080"
+    environment:
+      # Browser calls this URL; must be reachable from the host, not the Docker service name.
+      # Host `docker compose` loads repo `.env` for ${VITE_API_URL} if set.
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      - api
+
 volumes:
   postgres_data:
+  frontend_node_modules:

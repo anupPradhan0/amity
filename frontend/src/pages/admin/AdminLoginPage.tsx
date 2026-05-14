@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Label } from "@/components/ui/label.tsx";
 import { Loader2, Lock } from "lucide-react";
 import { apiUrl } from "@/lib/apiUrl.ts";
-import { setAccessToken } from "@/lib/authToken.ts";
+import { getAccessToken, setAccessToken } from "@/lib/authToken.ts";
 
 type LoginOk = {
   access_token?: string;
@@ -24,6 +24,21 @@ export default function AdminLoginPage() {
 
   const from =
     safeAdminPath((location.state as LocState)?.from) ?? "/auth/admin";
+
+  useEffect(() => {
+    const t = getAccessToken();
+    if (!t) return;
+    let cancelled = false;
+    fetchAuthMe(t)
+      .then(me => {
+        if (cancelled || !me.is_admin) return;
+        navigate(from, { replace: true });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [from, navigate]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -107,7 +122,7 @@ export default function AdminLoginPage() {
       navigate(from, { replace: true });
     } catch {
       setFormError(
-        "Cannot reach the API. Start the backend on port 8080 (e.g. uvicorn on 8080) and keep the Vite dev server running.",
+        "Cannot reach the API. Ensure the backend is running and `VITE_API_URL` matches it when using Docker.",
       );
     } finally {
       setIsSubmitting(false);

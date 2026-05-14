@@ -8,13 +8,13 @@ export default defineConfig(({ mode }) => ({
   envDir: path.resolve(__dirname, ".."),
   server: {
     host: "::",
-    port: 8000,
+    port: 8080,
     hmr: {
       overlay: false,
     },
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:8080",
+        target: "http://127.0.0.1:8000",
         changeOrigin: true,
         rewrite: p => p.replace(/^\/api/, ""),
       },

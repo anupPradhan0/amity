@@ -86,6 +86,12 @@ def health():
 
 @app.post("/auth/register", response_model=AuthSuccessResponse, status_code=status.HTTP_201_CREATED)
 def register(body: RegisterRequest, db: Session = Depends(get_db)):
+    if settings.admin_email and body.email == settings.admin_email:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This email is reserved for the administrator account.",
+        )
+
     exists = db.execute(select(User).where(User.email == body.email.lower().strip())).scalar_one_or_none()
     if exists:
         raise HTTPException(
@@ -96,6 +102,7 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)):
     user = User(
         email=body.email.lower().strip(),
         hashed_password=hash_password(body.password),
+        is_admin=False,
     )
     db.add(user)
     db.commit()
