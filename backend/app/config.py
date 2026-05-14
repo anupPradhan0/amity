@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     admin_email: str | None = None
     admin_password: str | None = None
 
+    # When true, insert demo catalog if `products` is empty. `product_seed_force` upserts demo slugs every boot (dev).
+    product_seed_on_empty: bool = True
+    product_seed_force: bool = False
+
     cors_origins: list[str] = [
         "http://localhost:8000",
         "http://127.0.0.1:8000",

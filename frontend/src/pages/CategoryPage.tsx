@@ -1,7 +1,8 @@
 import { useParams, Link } from "react-router-dom";
 import { useMemo, useState } from "react";
-import { products, categories, brands, allColors, allSizes } from "@/data/products";
+import { categories, brands, allColors, allSizes } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
+import { useCatalogProducts } from "@/hooks/useCatalogProducts.ts";
 import rackApparel from "@/assets/rack-apparel.jpg";
 import rackDrinkware from "@/assets/rack-drinkware.jpg";
 import rackAccessories from "@/assets/rack-accessories.jpg";
@@ -15,6 +16,7 @@ const racks: Record<string, string> = {
 
 export default function CategoryPage() {
   const { slug = "apparels" } = useParams();
+  const { data: products = [], isPending } = useCatalogProducts();
   const cat = categories.find(c => c.slug === slug) ?? categories[0];
 
   const [sort, setSort] = useState<"popular" | "low" | "high" | "new">("popular");
@@ -35,7 +37,7 @@ export default function CategoryPage() {
     else if (sort === "new") r = [...r].sort((a, b) => (b.newArrival ? 1 : 0) - (a.newArrival ? 1 : 0));
     else r = [...r].sort((a, b) => b.reviews - a.reviews);
     return r;
-  }, [slug, selBrands, selColors, selSizes, priceMax, sort]);
+  }, [products, slug, selBrands, selColors, selSizes, priceMax, sort]);
 
   const toggle = (arr: string[], setArr: (v: string[]) => void, v: string) =>
     setArr(arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]);
@@ -119,11 +121,19 @@ export default function CategoryPage() {
               </select>
             </div>
           </div>
-          {filtered.length === 0 ? (
+          {isPending ? (
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="aspect-[4/5] rounded-2xl bg-muted animate-pulse" />
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="text-center py-24 text-muted-foreground">No products match your filters. Try clearing some.</div>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-              {filtered.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
+              {filtered.map((p, i) => (
+                <ProductCard key={p.slug} product={p} index={i} />
+              ))}
             </div>
           )}
         </div>

@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
-import { Product } from "@/data/products";
+import type { StoreProduct } from "@/types/product.ts";
 import { Heart, ShoppingBag } from "lucide-react";
 import { useCart } from "@/store/cart";
 
-export default function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
+export default function ProductCard({ product, index = 0 }: { product: StoreProduct; index?: number }) {
   const { add, wishlist, toggleWish } = useCart();
-  const isWished = wishlist.includes(product.id);
+  const isWished = wishlist.includes(product.slug);
   const off = Math.round(((product.mrp - product.price) / product.mrp) * 100);
 
   return (
@@ -19,21 +19,28 @@ export default function ProductCard({ product, index = 0 }: { product: Product; 
           alt={product.name}
           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
           loading="lazy"
-          width={400} height={500}
+          width={400}
+          height={500}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         {product.bestSeller && (
-          <span className="absolute top-3 left-3 bg-secondary text-secondary-foreground text-[10px] font-bold px-2 py-1 rounded tracking-widest">BESTSELLER</span>
+          <span className="absolute top-3 left-3 bg-secondary text-secondary-foreground text-[10px] font-bold px-2 py-1 rounded tracking-widest">
+            BESTSELLER
+          </span>
         )}
         {product.newArrival && !product.bestSeller && (
-          <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-1 rounded tracking-widest">NEW</span>
+          <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-1 rounded tracking-widest">
+            NEW
+          </span>
         )}
         {off > 0 && (
-          <span className="absolute top-3 right-3 bg-background/90 backdrop-blur text-primary text-[10px] font-bold px-2 py-1 rounded">{off}% OFF</span>
+          <span className="absolute top-3 right-3 bg-background/90 backdrop-blur text-primary text-[10px] font-bold px-2 py-1 rounded">
+            {off}% OFF
+          </span>
         )}
       </Link>
       <button
-        onClick={() => toggleWish(product.id)}
+        onClick={() => toggleWish(product.slug)}
         className={`absolute top-12 right-3 h-9 w-9 rounded-full bg-background/90 backdrop-blur flex items-center justify-center shadow-card-soft transition-all ${isWished ? "text-destructive scale-110" : "text-muted-foreground hover:text-destructive"}`}
         aria-label="Wishlist"
       >

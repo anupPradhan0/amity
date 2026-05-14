@@ -51,6 +51,8 @@ services:
       ACCESS_TOKEN_EXPIRE_DAYS: ${ACCESS_TOKEN_EXPIRE_DAYS:-7}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      PRODUCT_SEED_ON_EMPTY: ${PRODUCT_SEED_ON_EMPTY:-true}
+      PRODUCT_SEED_FORCE: ${PRODUCT_SEED_FORCE:-false}
     volumes:
       - ./backend:/srv
     depends_on:

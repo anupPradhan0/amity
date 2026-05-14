@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
+import { useMemo } from "react";
 import { ArrowRight, ArrowUpRight, Instagram, Sparkles, Truck, ShieldCheck, RotateCcw, Star, Quote } from "lucide-react";
 import PovCampusScene from "@/components/PovCampusScene";
 import ProductCard from "@/components/ProductCard";
-import { products, categories } from "@/data/products";
+import { categories } from "@/data/products";
+import { useCatalogProducts } from "@/hooks/useCatalogProducts.ts";
 import learner1 from "@/assets/learner-1.jpg";
 import learner2 from "@/assets/learner-2.jpg";
 import learner3 from "@/assets/learner-3.jpg";
@@ -19,8 +21,15 @@ const categoryImages: Record<string, string> = {
 };
 
 export default function Index() {
-  const bestsellers = products.filter(p => p.bestSeller).concat(products.filter(p => !p.bestSeller)).slice(0, 8);
-  const newArrivals = products.filter(p => p.newArrival).concat(products.slice(0, 4)).slice(0, 4);
+  const { data: products = [], isPending } = useCatalogProducts();
+  const bestsellers = useMemo(
+    () => products.filter(p => p.bestSeller).concat(products.filter(p => !p.bestSeller)).slice(0, 8),
+    [products],
+  );
+  const newArrivals = useMemo(
+    () => products.filter(p => p.newArrival).concat(products.slice(0, 4)).slice(0, 4),
+    [products],
+  );
 
   return (
     <main>
@@ -169,7 +178,11 @@ export default function Index() {
             cta={{ label: "View all", to: "/category/apparels" }}
           />
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mt-12">
-            {bestsellers.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
+            {isPending
+              ? Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="aspect-[4/5] rounded-2xl bg-muted/80 animate-pulse" />
+                ))
+              : bestsellers.map((p, i) => <ProductCard key={p.slug} product={p} index={i} />)}
           </div>
         </div>
       </section>
@@ -231,7 +244,11 @@ export default function Index() {
           </Link>
         </div>
         <div className="container relative grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-          {newArrivals.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
+          {isPending
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="aspect-[4/5] rounded-2xl bg-primary-foreground/10 animate-pulse" />
+              ))
+            : newArrivals.map((p, i) => <ProductCard key={p.slug} product={p} index={i} />)}
         </div>
       </section>
 

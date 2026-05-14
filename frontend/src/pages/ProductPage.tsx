@@ -1,28 +1,56 @@
 import { useParams, Link, Navigate } from "react-router-dom";
-import { useState } from "react";
-import { products } from "@/data/products";
+import { useEffect, useMemo, useState } from "react";
 import { useCart } from "@/store/cart";
 import { Star, Heart, Truck, RotateCcw, ShieldCheck, ChevronRight, Minus, Plus } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import rackApparel from "@/assets/rack-apparel.jpg";
+import { useCatalogProducts, useProductBySlug } from "@/hooks/useCatalogProducts.ts";
 
 export default function ProductPage() {
   const { slug } = useParams();
-  const product = products.find(p => p.slug === slug);
+  const { data: product, isPending, isError } = useProductBySlug(slug);
+  const { data: allProducts = [] } = useCatalogProducts();
   const { add, toggleWish, wishlist } = useCart();
-  const [size, setSize] = useState<string>(product?.sizes?.[1] ?? "");
-  const [color, setColor] = useState<string>(product?.colors[0] ?? "");
+  const [size, setSize] = useState("");
+  const [color, setColor] = useState("");
   const [qty, setQty] = useState(1);
 
-  if (!product) return <Navigate to="/" replace />;
+  useEffect(() => {
+    if (!product) return;
+    setSize(product.sizes?.[1] ?? "");
+    setColor(product.colors[0] ?? "");
+    setQty(1);
+  }, [product]);
+
+  const related = useMemo(() => {
+    if (!product) return [];
+    return allProducts.filter(p => p.category === product.category && p.slug !== product.slug).slice(0, 4);
+  }, [allProducts, product]);
+
+  if (!slug) return <Navigate to="/" replace />;
+
+  if (isPending) {
+    return (
+      <main className="container py-24">
+        <div className="h-8 w-48 bg-muted animate-pulse rounded mb-8" />
+        <div className="grid lg:grid-cols-2 gap-10">
+          <div className="aspect-square bg-muted animate-pulse rounded-2xl" />
+          <div className="space-y-4">
+            <div className="h-10 bg-muted animate-pulse rounded w-3/4" />
+            <div className="h-6 bg-muted animate-pulse rounded w-1/2" />
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (isError || !product) return <Navigate to="/" replace />;
 
   const off = Math.round(((product.mrp - product.price) / product.mrp) * 100);
-  const related = products.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
-  const isWished = wishlist.includes(product.id);
+  const isWished = wishlist.includes(product.slug);
 
   return (
     <main className="relative">
-      {/* Rack ambience strip */}
       <div className="absolute inset-x-0 top-0 h-[70vh] -z-10 overflow-hidden">
         <img src={rackApparel} alt="" className="h-full w-full object-cover opacity-30" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background to-background" />
@@ -30,8 +58,14 @@ export default function ProductPage() {
 
       <section className="container pt-8 pb-16">
         <nav className="text-xs text-muted-foreground flex items-center gap-1 mb-6">
-          <Link to="/" className="hover:text-primary">Home</Link><ChevronRight className="h-3 w-3" />
-          <Link to={`/category/${product.category}`} className="hover:text-primary capitalize">{product.category}</Link><ChevronRight className="h-3 w-3" />
+          <Link to="/" className="hover:text-primary">
+            Home
+          </Link>
+          <ChevronRight className="h-3 w-3" />
+          <Link to={`/category/${product.category}`} className="hover:text-primary capitalize">
+            {product.category}
+          </Link>
+          <ChevronRight className="h-3 w-3" />
           <span className="text-foreground line-clamp-1">{product.name}</span>
         </nav>
 
@@ -42,7 +76,10 @@ export default function ProductPage() {
             </div>
             <div className="grid grid-cols-4 gap-3 mt-4">
               {[product.image, product.image, product.image, product.image].map((src, i) => (
-                <div key={i} className="aspect-square rounded-lg overflow-hidden bg-card border-2 border-transparent hover:border-secondary cursor-pointer">
+                <div
+                  key={i}
+                  className="aspect-square rounded-lg overflow-hidden bg-card border-2 border-transparent hover:border-secondary cursor-pointer"
+                >
                   <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" />
                 </div>
               ))}
@@ -55,9 +92,16 @@ export default function ProductPage() {
               <h1 className="font-display text-3xl lg:text-4xl font-bold mt-1">{product.name}</h1>
               <div className="flex items-center gap-3 mt-3">
                 <div className="flex items-center gap-1">
-                  {[1,2,3,4,5].map(i => <Star key={i} className={`h-4 w-4 ${i <= Math.round(product.rating) ? "fill-secondary text-secondary" : "text-muted-foreground"}`} />)}
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <Star
+                      key={i}
+                      className={`h-4 w-4 ${i <= Math.round(product.rating) ? "fill-secondary text-secondary" : "text-muted-foreground"}`}
+                    />
+                  ))}
                 </div>
-                <span className="text-sm text-muted-foreground">{product.rating} · {product.reviews} reviews</span>
+                <span className="text-sm text-muted-foreground">
+                  {product.rating} · {product.reviews} reviews
+                </span>
               </div>
             </div>
 
@@ -69,10 +113,19 @@ export default function ProductPage() {
             <p className="text-xs text-muted-foreground">Inclusive of all taxes · Free shipping above ₹999</p>
 
             <div>
-              <div className="text-sm font-semibold mb-2">Colour: <span className="text-muted-foreground">{color}</span></div>
+              <div className="text-sm font-semibold mb-2">
+                Colour: <span className="text-muted-foreground">{color}</span>
+              </div>
               <div className="flex gap-2">
                 {product.colors.map(c => (
-                  <button key={c} onClick={() => setColor(c)} className={`px-4 py-2 text-sm rounded-full border-2 ${color === c ? "border-primary bg-primary/5" : "border-border"}`}>{c}</button>
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setColor(c)}
+                    className={`px-4 py-2 text-sm rounded-full border-2 ${color === c ? "border-primary bg-primary/5" : "border-border"}`}
+                  >
+                    {c}
+                  </button>
                 ))}
               </div>
             </div>
@@ -80,12 +133,23 @@ export default function ProductPage() {
             {product.sizes && (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <div className="text-sm font-semibold">Size: <span className="text-muted-foreground">{size}</span></div>
-                  <button className="text-xs text-primary cm-link">Size guide</button>
+                  <div className="text-sm font-semibold">
+                    Size: <span className="text-muted-foreground">{size}</span>
+                  </div>
+                  <button type="button" className="text-xs text-primary cm-link">
+                    Size guide
+                  </button>
                 </div>
                 <div className="flex gap-2 flex-wrap">
                   {product.sizes.map(s => (
-                    <button key={s} onClick={() => setSize(s)} className={`h-11 w-11 text-sm font-semibold rounded-md border-2 ${size === s ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary"}`}>{s}</button>
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setSize(s)}
+                      className={`h-11 w-11 text-sm font-semibold rounded-md border-2 ${size === s ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary"}`}
+                    >
+                      {s}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -94,16 +158,38 @@ export default function ProductPage() {
             <div>
               <div className="text-sm font-semibold mb-2">Quantity</div>
               <div className="flex items-center border rounded-md w-fit">
-                <button onClick={() => setQty(Math.max(1, qty - 1))} className="p-2.5 hover:bg-muted"><Minus className="h-4 w-4" /></button>
+                <button type="button" onClick={() => setQty(Math.max(1, qty - 1))} className="p-2.5 hover:bg-muted">
+                  <Minus className="h-4 w-4" />
+                </button>
                 <span className="px-5 font-semibold">{qty}</span>
-                <button onClick={() => setQty(qty + 1)} className="p-2.5 hover:bg-muted"><Plus className="h-4 w-4" /></button>
+                <button type="button" onClick={() => setQty(qty + 1)} className="p-2.5 hover:bg-muted">
+                  <Plus className="h-4 w-4" />
+                </button>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <button onClick={() => { for (let i = 0; i < qty; i++) add(product, { size, color }); }} className="flex-1 bg-primary text-primary-foreground py-4 rounded-md font-bold hover:bg-primary-glow transition-colors">Add to Bag</button>
-              <button className="flex-1 bg-secondary text-secondary-foreground py-4 rounded-md font-bold hover:scale-[1.02] transition-transform shadow-glow">Buy Now</button>
-              <button onClick={() => toggleWish(product.id)} className={`p-4 border-2 rounded-md ${isWished ? "border-destructive text-destructive" : "border-border hover:border-destructive"}`} aria-label="Wishlist">
+              <button
+                type="button"
+                onClick={() => {
+                  for (let i = 0; i < qty; i++) add(product, { size, color });
+                }}
+                className="flex-1 bg-primary text-primary-foreground py-4 rounded-md font-bold hover:bg-primary-glow transition-colors"
+              >
+                Add to Bag
+              </button>
+              <button
+                type="button"
+                className="flex-1 bg-secondary text-secondary-foreground py-4 rounded-md font-bold hover:scale-[1.02] transition-transform shadow-glow"
+              >
+                Buy Now
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleWish(product.slug)}
+                className={`p-4 border-2 rounded-md ${isWished ? "border-destructive text-destructive" : "border-border hover:border-destructive"}`}
+                aria-label="Wishlist"
+              >
                 <Heart className="h-5 w-5" fill={isWished ? "currentColor" : "none"} />
               </button>
             </div>
@@ -125,15 +211,24 @@ export default function ProductPage() {
             <div className="pt-6 space-y-2 text-sm">
               <details className="border rounded-md p-4" open>
                 <summary className="font-semibold cursor-pointer">Description</summary>
-                <p className="mt-3 text-muted-foreground leading-relaxed">Premium 240 GSM cotton with a relaxed oversized fit, designed exclusively for the Amity learner community. Featuring the iconic CM brand mark, this piece is built to last lecture halls, library nights and weekend hangs alike.</p>
+                <p className="mt-3 text-muted-foreground leading-relaxed">
+                  Premium 240 GSM cotton with a relaxed oversized fit, designed exclusively for the Amity learner community.
+                  Featuring the iconic CM brand mark, this piece is built to last lecture halls, library nights and weekend
+                  hangs alike.
+                </p>
               </details>
               <details className="border rounded-md p-4">
                 <summary className="font-semibold cursor-pointer">Material & Care</summary>
-                <p className="mt-3 text-muted-foreground">100% cotton. Machine wash cold with similar colours. Tumble dry low. Do not bleach.</p>
+                <p className="mt-3 text-muted-foreground">
+                  100% cotton. Machine wash cold with similar colours. Tumble dry low. Do not bleach.
+                </p>
               </details>
               <details className="border rounded-md p-4">
                 <summary className="font-semibold cursor-pointer">Shipping & Returns</summary>
-                <p className="mt-3 text-muted-foreground">Ships in 1-2 business days from Noida. Delivered across India in 3-7 days. Easy 7-day returns and exchanges.</p>
+                <p className="mt-3 text-muted-foreground">
+                  Ships in 1-2 business days from Noida. Delivered across India in 3-7 days. Easy 7-day returns and
+                  exchanges.
+                </p>
               </details>
             </div>
           </div>
@@ -143,7 +238,9 @@ export default function ProductPage() {
           <div className="mt-24">
             <h2 className="font-display text-3xl font-bold mb-8">You may also like</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {related.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
+              {related.map((p, i) => (
+                <ProductCard key={p.slug} product={p} index={i} />
+              ))}
             </div>
           </div>
         )}

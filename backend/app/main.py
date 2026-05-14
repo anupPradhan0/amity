@@ -12,8 +12,10 @@ from app.config import settings
 from app.database import Base, SessionLocal, engine
 from app.deps import get_current_user, get_db
 from app.models import User
+from app.routers.catalog import admin_router, public_router
 from app.schemas import AuthSuccessResponse, LoginRequest, MessageResponse, RegisterRequest, UserPublic
 from app.security import create_access_token, hash_password, verify_password
+from app.seed_products import drop_products_table_if_incompatible, seed_products
 
 logger = logging.getLogger(__name__)
 
@@ -54,11 +56,19 @@ async def lifespan(app: FastAPI):
                 )
             )
 
+    drop_products_table_if_incompatible()
+    Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
         bootstrap_admin_user(db)
     finally:
         db.close()
+
+    db_seed = SessionLocal()
+    try:
+        seed_products(db_seed)
+    finally:
+        db_seed.close()
 
     yield
 
@@ -77,6 +87,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(public_router)
+app.include_router(admin_router)
 
 
 @app.get("/health", response_model=MessageResponse)

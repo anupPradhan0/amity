@@ -74,3 +74,62 @@ class AuthSuccessResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     detail: str
+
+
+class ProductPublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    slug: str
+    name: str
+    brand: str
+    category: str
+    sub_category: str
+    price: int
+    mrp: int
+    rating: float
+    reviews: int
+    image_path: str
+    colors: list[str]
+    sizes: list[str] | None = None
+    tags: list[str]
+    best_seller: bool
+    new_arrival: bool
+    active: bool
+
+
+class ProductCreate(BaseModel):
+    slug: str = Field(min_length=2, max_length=220)
+    name: str = Field(min_length=1, max_length=500)
+    brand: str = Field(min_length=1, max_length=200)
+    category: str = Field(min_length=1, max_length=64)
+    sub_category: str = Field(min_length=1, max_length=200)
+    price: int = Field(ge=0)
+    mrp: int = Field(ge=0)
+    rating: float = Field(ge=0, le=5)
+    reviews: int = Field(ge=0)
+    image_path: str = Field(min_length=1, max_length=500)
+    colors: list[str] = Field(default_factory=list)
+    sizes: list[str] | None = None
+    tags: list[str] = Field(default_factory=list)
+    best_seller: bool = False
+    new_arrival: bool = False
+    active: bool = True
+
+
+class ProductUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=500)
+    brand: str | None = Field(default=None, min_length=1, max_length=200)
+    category: str | None = Field(default=None, min_length=1, max_length=64)
+    sub_category: str | None = Field(default=None, min_length=1, max_length=200)
+    price: int | None = Field(default=None, ge=0)
+    mrp: int | None = Field(default=None, ge=0)
+    rating: float | None = Field(default=None, ge=0, le=5)
+    reviews: int | None = Field(default=None, ge=0)
+    image_path: str | None = Field(default=None, min_length=1, max_length=500)
+    colors: list[str] | None = None
+    sizes: list[str] | None = None
+    tags: list[str] | None = None
+    best_seller: bool | None = None
+    new_arrival: bool | None = None
+    active: bool | None = None
