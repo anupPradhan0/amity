@@ -59,8 +59,8 @@ export default function Footer() {
           <h4 className="font-display text-secondary mb-4">Newsletter</h4>
           <p className="text-sm opacity-80 mb-3">Get drops, learner stories & exclusive offers in your inbox.</p>
           <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
-            <input type="email" placeholder="you@amity.edu" className="flex-1 bg-background/10 border border-secondary/30 rounded-md px-3 py-2 text-sm placeholder:text-primary-foreground/50 focus:outline-none focus:border-secondary" />
-            <button className="bg-secondary text-secondary-foreground px-4 py-2 rounded-md font-semibold text-sm hover:opacity-90">Join</button>
+            <input type="email" placeholder="you@amity.edu" className="flex-1 min-w-0 bg-background/10 border border-secondary/30 rounded-full px-4 py-2.5 text-sm placeholder:text-primary-foreground/50 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/40 transition-shadow" />
+            <button className="bg-secondary text-secondary-foreground px-5 py-2.5 rounded-full font-semibold text-sm hover:scale-[1.03] active:scale-95 transition-transform shadow-glow shrink-0">Join</button>
           </form>
         </div>
       </div>

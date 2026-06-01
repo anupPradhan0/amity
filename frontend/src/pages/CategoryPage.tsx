@@ -54,7 +54,7 @@ export default function CategoryPage() {
             <Link to="/" className="hover:text-primary">Home</Link><ChevronRight className="h-3 w-3" />
             <span className="text-foreground capitalize">{cat.name}</span>
           </nav>
-          <div className="text-secondary-foreground bg-secondary inline-block text-[10px] tracking-[0.3em] font-bold px-3 py-1 rounded">RACK · {String(categories.findIndex(c=>c.slug===slug)+1).padStart(2,"0")}</div>
+          <div className="text-secondary-foreground bg-secondary inline-block text-[10px] tracking-[0.3em] font-bold px-3 py-1.5 rounded-full shadow-sm">RACK · {String(categories.findIndex(c=>c.slug===slug)+1).padStart(2,"0")}</div>
           <h1 className="font-display text-5xl lg:text-7xl font-bold mt-3">{cat.name}</h1>
           <p className="text-muted-foreground mt-2 max-w-xl">{cat.blurb} · Currently {filtered.length} pieces on the rack.</p>
         </div>
@@ -90,7 +90,7 @@ export default function CategoryPage() {
                 {allSizes.map(s => {
                   const active = selSizes.includes(s);
                   return (
-                    <button key={s} onClick={() => toggle(selSizes, setSelSizes, s)} className={`h-9 w-9 text-xs font-semibold rounded border ${active ? "bg-primary text-primary-foreground border-primary" : "border-border hover:border-primary"}`}>{s}</button>
+                    <button key={s} onClick={() => toggle(selSizes, setSelSizes, s)} className={`h-9 w-9 text-xs font-semibold rounded-lg border transition-colors ${active ? "bg-primary text-primary-foreground border-primary" : "border-border hover:border-primary"}`}>{s}</button>
                   );
                 })}
               </div>
@@ -110,10 +110,10 @@ export default function CategoryPage() {
           <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
             <div className="text-sm text-muted-foreground">{filtered.length} products</div>
             <div className="flex items-center gap-3">
-              <button onClick={() => setShowFilters(true)} className="lg:hidden inline-flex items-center gap-2 text-sm border px-3 py-2 rounded-md">
+              <button onClick={() => setShowFilters(true)} className="lg:hidden inline-flex items-center gap-2 text-sm border border-border px-4 py-2 rounded-full hover:border-primary transition-colors">
                 <SlidersHorizontal className="h-4 w-4" /> Filters
               </button>
-              <select value={sort} onChange={e => setSort(e.target.value as never)} className="text-sm border rounded-md px-3 py-2 bg-card">
+              <select value={sort} onChange={e => setSort(e.target.value as never)} className="text-sm border border-border rounded-full px-4 py-2 bg-card hover:border-primary transition-colors cursor-pointer">
                 <option value="popular">Most Popular</option>
                 <option value="new">New Arrivals</option>
                 <option value="low">Price: Low to High</option>

@@ -152,7 +152,11 @@ export default function Index() {
               <div className="absolute inset-0 rack-vignette opacity-55" />
               <div className="absolute bottom-0 left-0 right-0 p-7 lg:p-8 text-primary-foreground">
                 <div className="text-[10px] tracking-[0.28em] text-secondary font-bold drop-shadow-sm">
-                  {String(i + 1).padStart(2, "0")} · {c.count} ITEMS
+                  {String(i + 1).padStart(2, "0")}
+                  {(() => {
+                    const n = products.filter(p => p.category === c.slug).length;
+                    return n > 0 ? ` · ${n} ITEMS` : "";
+                  })()}
                 </div>
                 <div className="font-display text-3xl lg:text-4xl mt-2 font-bold tracking-tight drop-shadow-md [text-shadow:0_2px_12px_rgba(0,0,0,0.35)]">
                   {c.name}
@@ -379,7 +383,7 @@ function SectionIntro({
 }) {
   const body = (
     <>
-      <div className="text-secondary-foreground bg-secondary inline-block text-xs tracking-[0.3em] font-bold px-3 py-1.5 rounded shadow-sm">
+      <div className="text-secondary-foreground bg-secondary inline-block text-xs tracking-[0.3em] font-bold px-4 py-1.5 rounded-full shadow-sm">
         {eyebrow}
       </div>
       <h2 className="font-display text-4xl lg:text-6xl font-bold mt-5 max-w-3xl mx-auto leading-tight text-foreground">

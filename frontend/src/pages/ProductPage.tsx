@@ -76,12 +76,15 @@ export default function ProductPage() {
             </div>
             <div className="grid grid-cols-4 gap-3 mt-4">
               {[product.image, product.image, product.image, product.image].map((src, i) => (
-                <div
+                <button
+                  type="button"
                   key={i}
-                  className="aspect-square rounded-lg overflow-hidden bg-card border-2 border-transparent hover:border-secondary cursor-pointer"
+                  className={`aspect-square rounded-xl overflow-hidden bg-card transition-all ${
+                    i === 0 ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : "ring-1 ring-border hover:ring-secondary"
+                  }`}
                 >
                   <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" />
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -146,7 +149,7 @@ export default function ProductPage() {
                       key={s}
                       type="button"
                       onClick={() => setSize(s)}
-                      className={`h-11 w-11 text-sm font-semibold rounded-md border-2 ${size === s ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary"}`}
+                      className={`h-11 w-11 text-sm font-semibold rounded-xl border-2 transition-all ${size === s ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-border hover:border-primary hover:bg-primary/5"}`}
                     >
                       {s}
                     </button>
@@ -157,12 +160,12 @@ export default function ProductPage() {
 
             <div>
               <div className="text-sm font-semibold mb-2">Quantity</div>
-              <div className="flex items-center border rounded-md w-fit">
-                <button type="button" onClick={() => setQty(Math.max(1, qty - 1))} className="p-2.5 hover:bg-muted">
+              <div className="flex items-center border border-border rounded-full w-fit overflow-hidden">
+                <button type="button" onClick={() => setQty(Math.max(1, qty - 1))} className="p-2.5 pl-3.5 hover:bg-muted transition-colors disabled:opacity-40" disabled={qty <= 1}>
                   <Minus className="h-4 w-4" />
                 </button>
-                <span className="px-5 font-semibold">{qty}</span>
-                <button type="button" onClick={() => setQty(qty + 1)} className="p-2.5 hover:bg-muted">
+                <span className="px-5 font-semibold tabular-nums">{qty}</span>
+                <button type="button" onClick={() => setQty(qty + 1)} className="p-2.5 pr-3.5 hover:bg-muted transition-colors">
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
@@ -174,20 +177,20 @@ export default function ProductPage() {
                 onClick={() => {
                   for (let i = 0; i < qty; i++) add(product, { size, color });
                 }}
-                className="flex-1 bg-primary text-primary-foreground py-4 rounded-md font-bold hover:bg-primary-glow transition-colors"
+                className="flex-1 bg-primary text-primary-foreground py-4 rounded-xl font-bold hover:bg-primary-glow active:scale-[0.99] transition-all"
               >
                 Add to Bag
               </button>
               <button
                 type="button"
-                className="flex-1 bg-secondary text-secondary-foreground py-4 rounded-md font-bold hover:scale-[1.02] transition-transform shadow-glow"
+                className="flex-1 bg-secondary text-secondary-foreground py-4 rounded-xl font-bold hover:scale-[1.02] active:scale-[0.99] transition-transform shadow-glow"
               >
                 Buy Now
               </button>
               <button
                 type="button"
                 onClick={() => toggleWish(product.slug)}
-                className={`p-4 border-2 rounded-md ${isWished ? "border-destructive text-destructive" : "border-border hover:border-destructive"}`}
+                className={`p-4 border-2 rounded-xl transition-colors ${isWished ? "border-destructive text-destructive" : "border-border hover:border-destructive"}`}
                 aria-label="Wishlist"
               >
                 <Heart className="h-5 w-5" fill={isWished ? "currentColor" : "none"} />
@@ -208,23 +211,32 @@ export default function ProductPage() {
               ))}
             </div>
 
-            <div className="pt-6 space-y-2 text-sm">
-              <details className="border rounded-md p-4" open>
-                <summary className="font-semibold cursor-pointer">Description</summary>
+            <div className="pt-6 space-y-3 text-sm">
+              <details className="group/d border border-border/70 bg-card rounded-xl p-4 transition-colors hover:border-border" open>
+                <summary className="font-semibold cursor-pointer list-none flex items-center justify-between">
+                  Description
+                  <Plus className="h-4 w-4 text-muted-foreground transition-transform group-open/d:rotate-45" />
+                </summary>
                 <p className="mt-3 text-muted-foreground leading-relaxed">
                   Premium 240 GSM cotton with a relaxed oversized fit, designed exclusively for the Amity learner community.
                   Featuring the iconic CM brand mark, this piece is built to last lecture halls, library nights and weekend
                   hangs alike.
                 </p>
               </details>
-              <details className="border rounded-md p-4">
-                <summary className="font-semibold cursor-pointer">Material & Care</summary>
+              <details className="group/d border border-border/70 bg-card rounded-xl p-4 transition-colors hover:border-border">
+                <summary className="font-semibold cursor-pointer list-none flex items-center justify-between">
+                  Material &amp; Care
+                  <Plus className="h-4 w-4 text-muted-foreground transition-transform group-open/d:rotate-45" />
+                </summary>
                 <p className="mt-3 text-muted-foreground">
                   100% cotton. Machine wash cold with similar colours. Tumble dry low. Do not bleach.
                 </p>
               </details>
-              <details className="border rounded-md p-4">
-                <summary className="font-semibold cursor-pointer">Shipping & Returns</summary>
+              <details className="group/d border border-border/70 bg-card rounded-xl p-4 transition-colors hover:border-border">
+                <summary className="font-semibold cursor-pointer list-none flex items-center justify-between">
+                  Shipping &amp; Returns
+                  <Plus className="h-4 w-4 text-muted-foreground transition-transform group-open/d:rotate-45" />
+                </summary>
                 <p className="mt-3 text-muted-foreground">
                   Ships in 1-2 business days from Noida. Delivered across India in 3-7 days. Easy 7-day returns and
                   exchanges.
