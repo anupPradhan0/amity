@@ -33,6 +33,7 @@ export type ProductPatchBody = Partial<{
   rating: number;
   reviews: number;
   image_path: string;
+  images: string[];
   colors: string[];
   sizes: string[] | null;
   tags: string[];
@@ -40,6 +41,27 @@ export type ProductPatchBody = Partial<{
   new_arrival: boolean;
   active: boolean;
 }>;
+
+/** Body for creating a product (matches FastAPI `ProductCreate`). */
+export type ProductCreateBody = {
+  slug: string;
+  name: string;
+  brand: string;
+  category: string;
+  sub_category: string;
+  price: number;
+  mrp: number;
+  rating?: number;
+  reviews?: number;
+  image_path: string;
+  images?: string[];
+  colors?: string[];
+  sizes?: string[] | null;
+  tags?: string[];
+  best_seller?: boolean;
+  new_arrival?: boolean;
+  active?: boolean;
+};
 
 function assertOk(res: Response, fallback: string): void {
   if (!res.ok) throw new Error(fallback);
@@ -83,6 +105,42 @@ export async function patchAdminProduct(
   });
   assertOk(res, "Could not update product.");
   return res.json() as Promise<ProductApiRow>;
+}
+
+/** Pull a readable message out of a FastAPI error response. */
+async function apiErrorMessage(res: Response, fallback: string): Promise<string> {
+  const data = (await res.json().catch(() => null)) as { detail?: unknown } | null;
+  const detail = data?.detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail) && detail[0] && typeof detail[0] === "object" && "msg" in detail[0]) {
+    return String((detail[0] as { msg: string }).msg);
+  }
+  return fallback;
+}
+
+export async function createAdminProduct(
+  body: ProductCreateBody,
+  accessToken: string,
+): Promise<ProductApiRow> {
+  const res = await fetch(apiUrl("/admin/products"), {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await apiErrorMessage(res, "Could not create product."));
+  return res.json() as Promise<ProductApiRow>;
+}
+
+export async function deleteAdminProduct(slug: string, accessToken: string): Promise<void> {
+  const res = await fetch(apiUrl(`/admin/products/${encodeURIComponent(slug)}`), {
+    method: "DELETE",
+    headers: { Accept: "application/json", Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) throw new Error(await apiErrorMessage(res, "Could not delete product."));
 }
 
 export function mapProductFromApi(row: ProductApiRow): StoreProduct {

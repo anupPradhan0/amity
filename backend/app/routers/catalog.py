@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from app.deps import get_current_admin_user, get_db
@@ -126,3 +126,18 @@ def admin_update_product(
     db.commit()
     db.refresh(p)
     return ProductPublic.model_validate(p)
+
+
+@admin_router.delete("/{slug}", status_code=status.HTTP_204_NO_CONTENT)
+def admin_delete_product(
+    slug: str,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_admin_user),
+) -> None:
+    p = db.execute(select(Product).where(Product.slug == slug)).scalar_one_or_none()
+    if p is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
+    # Remove dependent reviews first (works regardless of DB-level cascade support).
+    db.execute(delete(Review).where(Review.product_id == p.id))
+    db.delete(p)
+    db.commit()
