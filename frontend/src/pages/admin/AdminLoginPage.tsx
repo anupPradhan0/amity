@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Label } from "@/components/ui/label.tsx";
 import { Loader2, Lock } from "lucide-react";
 import { apiUrl } from "@/lib/apiUrl.ts";
+import { fetchAuthMe } from "@/lib/authApi.ts";
 import { getAccessToken, setAccessToken } from "@/lib/authToken.ts";
 
 type LoginOk = {

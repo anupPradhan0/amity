@@ -1,10 +1,13 @@
 import { useParams, Link, Navigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { useCart } from "@/store/cart";
-import { Star, Heart, Truck, RotateCcw, ShieldCheck, ChevronRight, Minus, Plus } from "lucide-react";
+import { Star, Heart, Truck, RotateCcw, ShieldCheck, ChevronRight, Minus, Plus, Loader2 } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import ProductCard from "@/components/ProductCard";
 import rackApparel from "@/assets/rack-apparel.jpg";
 import { useCatalogProducts, useProductBySlug } from "@/hooks/useCatalogProducts.ts";
+import { fetchReviews, postReview, type Review } from "@/lib/feedbackApi.ts";
 
 export default function ProductPage() {
   const { slug } = useParams();
@@ -14,12 +17,14 @@ export default function ProductPage() {
   const [size, setSize] = useState("");
   const [color, setColor] = useState("");
   const [qty, setQty] = useState(1);
+  const [activeImage, setActiveImage] = useState("");
 
   useEffect(() => {
     if (!product) return;
     setSize(product.sizes?.[1] ?? "");
     setColor(product.colors[0] ?? "");
     setQty(1);
+    setActiveImage(product.image);
   }, [product]);
 
   const related = useMemo(() => {
@@ -72,28 +77,43 @@ export default function ProductPage() {
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16">
           <div className="relative">
             <div className="aspect-square bg-card rounded-2xl overflow-hidden shadow-card-soft">
-              <img src={product.image} alt={product.name} className="h-full w-full object-cover" width={800} height={800} />
+              <img
+                src={activeImage || product.image}
+                alt={product.name}
+                className="h-full w-full object-cover transition-opacity duration-300"
+                width={800}
+                height={800}
+              />
             </div>
-            <div className="grid grid-cols-4 gap-3 mt-4">
-              {[product.image, product.image, product.image, product.image].map((src, i) => (
-                <button
-                  type="button"
-                  key={i}
-                  className={`aspect-square rounded-xl overflow-hidden bg-card transition-all ${
-                    i === 0 ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : "ring-1 ring-border hover:ring-secondary"
-                  }`}
-                >
-                  <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" />
-                </button>
-              ))}
-            </div>
+            {product.images.length > 1 && (
+              <div className="flex gap-3 mt-4">
+                {product.images.map((src, i) => {
+                  const active = (activeImage || product.image) === src;
+                  return (
+                    <button
+                      type="button"
+                      key={i}
+                      onClick={() => setActiveImage(src)}
+                      className={`h-20 w-20 rounded-xl overflow-hidden bg-card transition-all ${
+                        active
+                          ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                          : "ring-1 ring-border hover:ring-secondary"
+                      }`}
+                      aria-label={`View image ${i + 1}`}
+                    >
+                      <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="space-y-5">
             <div>
               <div className="text-xs uppercase tracking-widest text-muted-foreground">{product.brand}</div>
               <h1 className="font-display text-3xl lg:text-4xl font-bold mt-1">{product.name}</h1>
-              <div className="flex items-center gap-3 mt-3">
+              <a href="#reviews" className="flex items-center gap-3 mt-3 w-fit group/rt">
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map(i => (
                     <Star
@@ -102,10 +122,10 @@ export default function ProductPage() {
                     />
                   ))}
                 </div>
-                <span className="text-sm text-muted-foreground">
-                  {product.rating} · {product.reviews} reviews
+                <span className="text-sm text-muted-foreground group-hover/rt:text-primary transition-colors">
+                  {product.reviews > 0 ? `${product.rating} · ${product.reviews} reviews` : "No reviews yet — be the first"}
                 </span>
-              </div>
+              </a>
             </div>
 
             <div className="flex items-baseline gap-3">
@@ -246,6 +266,8 @@ export default function ProductPage() {
           </div>
         </div>
 
+        <ReviewsSection slug={product.slug} rating={product.rating} count={product.reviews} />
+
         {related.length > 0 && (
           <div className="mt-24">
             <h2 className="font-display text-3xl font-bold mb-8">You may also like</h2>
@@ -258,5 +280,199 @@ export default function ProductPage() {
         )}
       </section>
     </main>
+  );
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function ReviewsSection({ slug, rating, count }: { slug: string; rating: number; count: number }) {
+  const qc = useQueryClient();
+  const { data: reviews = [], isPending } = useQuery({
+    queryKey: ["reviews", slug],
+    queryFn: () => fetchReviews(slug),
+    staleTime: 30_000,
+  });
+
+  const [name, setName] = useState("");
+  const [stars, setStars] = useState(5);
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [showForm, setShowForm] = useState(false);
+
+  const mutation = useMutation({
+    mutationFn: () =>
+      postReview(slug, { author_name: name.trim(), rating: stars, title: title.trim() || undefined, body: body.trim() }),
+    onSuccess: () => {
+      toast.success("Thanks for your review!", { description: "It's now live on this product." });
+      setName("");
+      setTitle("");
+      setBody("");
+      setStars(5);
+      setShowForm(false);
+      qc.invalidateQueries({ queryKey: ["reviews", slug] });
+      qc.invalidateQueries({ queryKey: ["catalog", "products"] });
+      qc.invalidateQueries({ queryKey: ["catalog", "product", slug] });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) return toast.error("Please enter your name.");
+    if (!body.trim()) return toast.error("Please write a short review.");
+    mutation.mutate();
+  }
+
+  return (
+    <section id="reviews" className="mt-24 scroll-mt-24">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="font-display text-3xl font-bold">Customer reviews</h2>
+          <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-0.5">
+              {[1, 2, 3, 4, 5].map(i => (
+                <Star
+                  key={i}
+                  className={`h-4 w-4 ${i <= Math.round(rating) ? "fill-secondary text-secondary" : "text-muted-foreground/40"}`}
+                />
+              ))}
+            </div>
+            {count > 0 ? (
+              <span>
+                <span className="font-semibold text-foreground">{rating}</span> out of 5 · {count}{" "}
+                {count === 1 ? "review" : "reviews"}
+              </span>
+            ) : (
+              <span>No reviews yet</span>
+            )}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowForm(v => !v)}
+          className="inline-flex items-center justify-center self-start rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-glow active:scale-[0.98] transition-all sm:self-auto"
+        >
+          {showForm ? "Cancel" : "Write a review"}
+        </button>
+      </div>
+
+      {showForm && (
+        <form
+          onSubmit={submit}
+          className="mt-6 rounded-2xl border border-border/70 bg-card p-6 shadow-card-soft space-y-4 animate-fade-in"
+        >
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-semibold">Your rating</span>
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map(i => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setStars(i)}
+                  aria-label={`${i} star${i > 1 ? "s" : ""}`}
+                  className="p-0.5"
+                >
+                  <Star
+                    className={`h-7 w-7 transition-colors ${i <= stars ? "fill-secondary text-secondary" : "text-muted-foreground/40 hover:text-secondary"}`}
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="rv-name" className="text-sm font-semibold">
+                Your name
+              </label>
+              <input
+                id="rv-name"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                maxLength={120}
+                placeholder="e.g. Aarav S."
+                className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary"
+              />
+            </div>
+            <div>
+              <label htmlFor="rv-title" className="text-sm font-semibold">
+                Title <span className="font-normal text-muted-foreground">(optional)</span>
+              </label>
+              <input
+                id="rv-title"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                maxLength={200}
+                placeholder="Sums up your experience"
+                className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary"
+              />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="rv-body" className="text-sm font-semibold">
+              Your review
+            </label>
+            <textarea
+              id="rv-body"
+              value={body}
+              onChange={e => setBody(e.target.value)}
+              maxLength={2000}
+              rows={4}
+              placeholder="What did you like? How's the fit, quality, delivery?"
+              className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary resize-y"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={mutation.isPending}
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-secondary px-7 py-3 text-sm font-bold text-secondary-foreground hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-glow disabled:opacity-60 disabled:hover:scale-100"
+          >
+            {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            Submit review
+          </button>
+        </form>
+      )}
+
+      <div className="mt-8 space-y-4">
+        {isPending ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-28 rounded-2xl bg-muted/60 animate-pulse" />
+          ))
+        ) : reviews.length === 0 ? (
+          <p className="rounded-2xl border border-dashed border-border py-12 text-center text-muted-foreground">
+            No reviews yet. Be the first to share your experience.
+          </p>
+        ) : (
+          reviews.map((r: Review) => (
+            <article key={r.id} className="rounded-2xl border border-border/70 bg-card p-5 shadow-card-soft">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
+                    {r.author_name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold">{r.author_name}</div>
+                    <div className="flex items-center gap-0.5">
+                      {[1, 2, 3, 4, 5].map(i => (
+                        <Star
+                          key={i}
+                          className={`h-3.5 w-3.5 ${i <= r.rating ? "fill-secondary text-secondary" : "text-muted-foreground/30"}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <time className="text-xs text-muted-foreground shrink-0">{formatDate(r.created_at)}</time>
+              </div>
+              {r.title && <h3 className="mt-3 text-sm font-semibold">{r.title}</h3>}
+              <p className="mt-1.5 text-sm leading-relaxed text-foreground/85">{r.body}</p>
+            </article>
+          ))
+        )}
+      </div>
+    </section>
   );
 }

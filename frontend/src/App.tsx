@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound.tsx";
 import CategoryPage from "./pages/CategoryPage.tsx";
 import ProductPage from "./pages/ProductPage.tsx";
 import StorePage from "./pages/StorePage.tsx";
+import SearchPage from "./pages/SearchPage.tsx";
 import LookbookPage from "./pages/LookbookPage.tsx";
 import WishlistPage from "./pages/WishlistPage.tsx";
 import TrackOrderPage from "./pages/TrackOrderPage.tsx";
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="category/:slug" element={<CategoryPage />} />
               <Route path="product/:slug" element={<ProductPage />} />
               <Route path="store" element={<StorePage />} />
+              <Route path="search" element={<SearchPage />} />
               <Route path="lookbook" element={<LookbookPage />} />
               <Route path="wishlist" element={<WishlistPage />} />
               <Route path="track-order" element={<TrackOrderPage />} />

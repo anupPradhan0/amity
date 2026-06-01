@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
-import { useMemo } from "react";
-import { ArrowRight, ArrowUpRight, Instagram, Sparkles, Truck, ShieldCheck, RotateCcw, Star, Quote } from "lucide-react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { ArrowRight, ArrowUpRight, Instagram, Sparkles, Truck, ShieldCheck, RotateCcw, Star, Quote, Loader2 } from "lucide-react";
+import { subscribeNewsletter } from "@/lib/feedbackApi.ts";
 import PovCampusScene from "@/components/PovCampusScene";
 import ProductCard from "@/components/ProductCard";
 import { categories } from "@/data/products";
@@ -30,6 +32,28 @@ export default function Index() {
     () => products.filter(p => p.newArrival).concat(products.slice(0, 4)).slice(0, 4),
     [products],
   );
+
+  const [email, setEmail] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
+
+  async function handleSubscribe(e: React.FormEvent) {
+    e.preventDefault();
+    const value = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      toast.error("Enter a valid email address.");
+      return;
+    }
+    setSubscribing(true);
+    try {
+      const msg = await subscribeNewsletter(value);
+      toast.success("You're in!", { description: msg });
+      setEmail("");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSubscribing(false);
+    }
+  }
 
   return (
     <main>
@@ -344,7 +368,7 @@ export default function Index() {
             <p className="text-primary-foreground/75 mt-4 text-base leading-relaxed">
               Join 12,000+ Amity learners getting early access, exclusive coupons &amp; lookbooks.
             </p>
-            <form onSubmit={(e) => e.preventDefault()} className="mt-9 max-w-md mx-auto flex flex-col sm:flex-row gap-3">
+            <form onSubmit={handleSubscribe} className="mt-9 max-w-md mx-auto flex flex-col sm:flex-row gap-3">
               <label htmlFor="newsletter-email" className="sr-only">
                 Email address
               </label>
@@ -352,14 +376,18 @@ export default function Index() {
                 id="newsletter-email"
                 type="email"
                 required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 placeholder="you@amity.edu"
                 autoComplete="email"
                 className="flex-1 min-w-0 px-5 py-3.5 rounded-full bg-background/18 backdrop-blur-md border border-secondary/45 text-primary-foreground placeholder:text-primary-foreground/45 focus:outline-none focus:ring-2 focus:ring-secondary/80 focus:border-secondary transition-shadow"
               />
               <button
                 type="submit"
-                className="px-8 py-3.5 bg-secondary text-secondary-foreground font-bold rounded-full hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-glow shrink-0"
+                disabled={subscribing}
+                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-secondary text-secondary-foreground font-bold rounded-full hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-glow shrink-0 disabled:opacity-70 disabled:hover:scale-100"
               >
+                {subscribing && <Loader2 className="h-4 w-4 animate-spin" />}
                 Subscribe
               </button>
             </form>

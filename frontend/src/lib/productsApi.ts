@@ -14,6 +14,7 @@ export type ProductApiRow = {
   rating: number;
   reviews: number;
   image_path: string;
+  images: string[];
   colors: string[];
   sizes: string[] | null;
   tags: string[];
@@ -96,6 +97,7 @@ export function mapProductFromApi(row: ProductApiRow): StoreProduct {
     price: row.price,
     mrp: row.mrp,
     image: row.image_path,
+    images: row.images?.length ? row.images : [row.image_path],
     rating: row.rating,
     reviews: row.reviews,
     colors: row.colors,

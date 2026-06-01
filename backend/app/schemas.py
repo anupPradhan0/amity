@@ -1,9 +1,10 @@
 """Pydantic request/response models (validation layer)."""
 
 import re
+from datetime import datetime
 from typing import Annotated
 
-from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, field_validator
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, field_validator, model_validator
 
 # Loose email validation (allows .local, .internal, etc.) — avoids EmailStr rejecting reserved TLDs.
 _EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+(?:\.[^\s@]+)+$")
@@ -90,12 +91,26 @@ class ProductPublic(BaseModel):
     rating: float
     reviews: int
     image_path: str
+    images: list[str] = Field(default_factory=list)
     colors: list[str]
     sizes: list[str] | None = None
     tags: list[str]
     best_seller: bool
     new_arrival: bool
     active: bool
+
+    @field_validator("images", mode="before")
+    @classmethod
+    def none_to_empty(cls, v: object) -> object:
+        # DB column is nullable; treat NULL as "no extra photos".
+        return [] if v is None else v
+
+    @model_validator(mode="after")
+    def ensure_gallery(self) -> "ProductPublic":
+        # Always expose at least the primary photo; never fabricate duplicates.
+        if not self.images:
+            self.images = [self.image_path]
+        return self
 
 
 class ProductCreate(BaseModel):
@@ -109,6 +124,7 @@ class ProductCreate(BaseModel):
     rating: float = Field(ge=0, le=5)
     reviews: int = Field(ge=0)
     image_path: str = Field(min_length=1, max_length=500)
+    images: list[str] = Field(default_factory=list)
     colors: list[str] = Field(default_factory=list)
     sizes: list[str] | None = None
     tags: list[str] = Field(default_factory=list)
@@ -127,9 +143,59 @@ class ProductUpdate(BaseModel):
     rating: float | None = Field(default=None, ge=0, le=5)
     reviews: int | None = Field(default=None, ge=0)
     image_path: str | None = Field(default=None, min_length=1, max_length=500)
+    images: list[str] | None = None
     colors: list[str] | None = None
     sizes: list[str] | None = None
     tags: list[str] | None = None
     best_seller: bool | None = None
     new_arrival: bool | None = None
     active: bool | None = None
+
+
+# ---- Reviews ----------------------------------------------------------------
+
+
+class ReviewPublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    author_name: str
+    rating: int
+    title: str | None = None
+    body: str
+    created_at: datetime
+
+
+class ReviewCreate(BaseModel):
+    author_name: str = Field(min_length=1, max_length=120)
+    rating: int = Field(ge=1, le=5)
+    title: str | None = Field(default=None, max_length=200)
+    body: str = Field(min_length=1, max_length=2000)
+
+    @field_validator("author_name", "body")
+    @classmethod
+    def not_blank(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("This field cannot be blank.")
+        return v.strip()
+
+
+# ---- Newsletter & contact ---------------------------------------------------
+
+
+class NewsletterRequest(BaseModel):
+    email: LooseEmail = Field(description="Subscriber email.")
+
+
+class ContactRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    email: LooseEmail
+    topic: str = Field(default="general", max_length=64)
+    message: str = Field(min_length=1, max_length=4000)
+
+    @field_validator("name", "message")
+    @classmethod
+    def strip_not_blank(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("This field cannot be blank.")
+        return v.strip()

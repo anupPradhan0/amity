@@ -1,6 +1,6 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ShoppingBag, Search, Heart, Menu, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCart } from "@/store/cart";
 import { categories } from "@/data/products";
 
@@ -10,7 +10,27 @@ export default function Navbar() {
   const { count, setOpen } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
   const loc = useLocation();
+  const navigate = useNavigate();
+
+  function submitSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = query.trim();
+    navigate(q ? `/search?q=${encodeURIComponent(q)}` : "/search");
+    setSearchOpen(false);
+    setQuery("");
+  }
+
+  function toggleSearch() {
+    setSearchOpen(v => {
+      const next = !v;
+      if (next) setTimeout(() => searchRef.current?.focus(), 0);
+      return next;
+    });
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -70,7 +90,27 @@ export default function Navbar() {
             <Link to="/sign-in" className="hidden sm:inline-flex text-sm font-medium text-muted-foreground hover:text-primary px-2 py-1.5 rounded-md transition-colors">
               Sign in
             </Link>
-            <button className="p-2 hover:text-secondary transition-colors" aria-label="Search"><Search className="h-5 w-5" /></button>
+            <form onSubmit={submitSearch} className="flex items-center">
+              <input
+                ref={searchRef}
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                onBlur={() => !query && setSearchOpen(false)}
+                placeholder="Search products…"
+                aria-label="Search products"
+                className={`rounded-full bg-muted/70 text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-secondary/50 ${
+                  searchOpen ? "w-36 sm:w-52 px-4 py-2 mr-1 opacity-100" : "w-0 px-0 py-2 opacity-0 pointer-events-none"
+                }`}
+              />
+              <button
+                type={searchOpen ? "submit" : "button"}
+                onClick={() => !searchOpen && toggleSearch()}
+                className="p-2 hover:text-secondary transition-colors"
+                aria-label="Search"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+            </form>
             <Link to="/wishlist" className="p-2 hover:text-secondary transition-colors hidden sm:block" aria-label="Wishlist"><Heart className="h-5 w-5" /></Link>
             <button onClick={() => setOpen(true)} className="relative p-2 hover:text-secondary transition-colors" aria-label="Cart">
               <ShoppingBag className="h-5 w-5" />

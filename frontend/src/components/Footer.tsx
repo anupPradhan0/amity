@@ -1,9 +1,34 @@
 import { Link } from "react-router-dom";
-import { Instagram, Twitter, Youtube, Mail } from "lucide-react";
+import { Instagram, Twitter, Youtube, Mail, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { subscribeNewsletter } from "@/lib/feedbackApi.ts";
 
 const LOGO_URL = "/amity-university-logo.png";
 
 export default function Footer() {
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubscribe(e: React.FormEvent) {
+    e.preventDefault();
+    const value = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      toast.error("Enter a valid email address.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const msg = await subscribeNewsletter(value);
+      toast.success("Subscribed", { description: msg });
+      setEmail("");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <footer className="bg-primary text-primary-foreground mt-24">
       <div className="container py-16 grid gap-10 md:grid-cols-2 lg:grid-cols-4">
@@ -58,9 +83,22 @@ export default function Footer() {
         <div>
           <h4 className="font-display text-secondary mb-4">Newsletter</h4>
           <p className="text-sm opacity-80 mb-3">Get drops, learner stories & exclusive offers in your inbox.</p>
-          <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
-            <input type="email" placeholder="you@amity.edu" className="flex-1 min-w-0 bg-background/10 border border-secondary/30 rounded-full px-4 py-2.5 text-sm placeholder:text-primary-foreground/50 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/40 transition-shadow" />
-            <button className="bg-secondary text-secondary-foreground px-5 py-2.5 rounded-full font-semibold text-sm hover:scale-[1.03] active:scale-95 transition-transform shadow-glow shrink-0">Join</button>
+          <form className="flex gap-2" onSubmit={handleSubscribe}>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="you@amity.edu"
+              className="flex-1 min-w-0 bg-background/10 border border-secondary/30 rounded-full px-4 py-2.5 text-sm placeholder:text-primary-foreground/50 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/40 transition-shadow"
+            />
+            <button
+              disabled={submitting}
+              className="inline-flex items-center gap-1.5 bg-secondary text-secondary-foreground px-5 py-2.5 rounded-full font-semibold text-sm hover:scale-[1.03] active:scale-95 transition-transform shadow-glow shrink-0 disabled:opacity-60 disabled:hover:scale-100"
+            >
+              {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              Join
+            </button>
           </form>
         </div>
       </div>

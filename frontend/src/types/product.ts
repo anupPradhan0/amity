@@ -11,6 +11,7 @@ export type StoreProduct = {
   price: number;
   mrp: number;
   image: string;
+  images: string[];
   rating: number;
   reviews: number;
   colors: string[];

@@ -14,6 +14,7 @@ CATALOG_ROWS: list[dict[str, Any]] = [
         "rating": 4.8,
         "reviews": 142,
         "image_path": "/catalog/product-tshirt-white.jpg",
+        "images": ["/catalog/product-tshirt-white.jpg", "/catalog/product-tshirt-navy.jpg"],
         "colors": ["White", "Navy"],
         "sizes": ["S", "M", "L", "XL", "XXL"],
         "tags": ["oversized", "graphic", "unisex"],

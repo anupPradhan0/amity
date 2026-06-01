@@ -11,11 +11,19 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import Base, SessionLocal, engine
 from app.deps import get_current_user, get_db
-from app.models import User
+from app.models import ContactMessage, NewsletterSubscriber, User
 from app.routers.catalog import admin_router, public_router
-from app.schemas import AuthSuccessResponse, LoginRequest, MessageResponse, RegisterRequest, UserPublic
+from app.schemas import (
+    AuthSuccessResponse,
+    ContactRequest,
+    LoginRequest,
+    MessageResponse,
+    NewsletterRequest,
+    RegisterRequest,
+    UserPublic,
+)
 from app.security import create_access_token, hash_password, verify_password
-from app.seed_products import drop_products_table_if_incompatible, seed_products
+from app.seed_products import drop_products_table_if_incompatible, seed_products, seed_reviews
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +63,8 @@ async def lifespan(app: FastAPI):
                     "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE"
                 )
             )
+            # `images` was added after the initial release; backfill the column on existing DBs.
+            conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS images JSON"))
 
     drop_products_table_if_incompatible()
     Base.metadata.create_all(bind=engine)
@@ -67,6 +77,7 @@ async def lifespan(app: FastAPI):
     db_seed = SessionLocal()
     try:
         seed_products(db_seed)
+        seed_reviews(db_seed)
     finally:
         db_seed.close()
 
@@ -145,3 +156,31 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
 @app.get("/auth/me", response_model=UserPublic)
 def auth_me(user: User = Depends(get_current_user)):
     return UserPublic.model_validate(user)
+
+
+@app.post("/newsletter", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
+def subscribe_newsletter(body: NewsletterRequest, db: Session = Depends(get_db)):
+    email = body.email
+    existing = db.execute(
+        select(NewsletterSubscriber).where(NewsletterSubscriber.email == email)
+    ).scalar_one_or_none()
+    if existing is not None:
+        # Idempotent: a repeat subscribe is a success, not an error.
+        return MessageResponse(detail="You're already on the list — see you in your inbox.")
+    db.add(NewsletterSubscriber(email=email))
+    db.commit()
+    return MessageResponse(detail="Subscribed! Check your inbox for the next Campus Merch drop.")
+
+
+@app.post("/contact", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
+def submit_contact(body: ContactRequest, db: Session = Depends(get_db)):
+    db.add(
+        ContactMessage(
+            name=body.name,
+            email=body.email,
+            topic=body.topic,
+            message=body.message,
+        )
+    )
+    db.commit()
+    return MessageResponse(detail="Thanks for reaching out — the Campus Merch team will reply by email soon.")

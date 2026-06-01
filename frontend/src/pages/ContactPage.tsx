@@ -1,23 +1,49 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import PageShell from "@/components/PageShell";
 import { Mail, MapPin, Phone } from "lucide-react";
+import { sendContactMessage } from "@/lib/feedbackApi.ts";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [topic, setTopic] = useState("order");
   const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!name.trim()) {
+      toast.error("Please enter your name.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      toast.error("Enter a valid email address.");
+      return;
+    }
     if (!message.trim()) {
       toast.error("Please enter a message.");
       return;
     }
-    toast.success("Message sent (demo)", {
-      description: "This form doesn’t post to a server yet — use email below for real support.",
-    });
+    setSubmitting(true);
+    try {
+      const detail = await sendContactMessage({
+        name: name.trim(),
+        email: email.trim(),
+        topic,
+        message: message.trim(),
+      });
+      toast.success("Message sent", { description: detail });
+      setName("");
+      setEmail("");
+      setTopic("order");
+      setMessage("");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -91,8 +117,10 @@ export default function ContactPage() {
           </div>
           <button
             type="submit"
-            className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-secondary text-secondary-foreground font-bold hover:scale-[1.02] transition-transform shadow-glow"
+            disabled={submitting}
+            className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-secondary text-secondary-foreground font-bold hover:scale-[1.02] transition-transform shadow-glow disabled:opacity-60 disabled:hover:scale-100"
           >
+            {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
             Send message
           </button>
         </form>

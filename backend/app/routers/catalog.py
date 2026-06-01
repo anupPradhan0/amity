@@ -1,15 +1,28 @@
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.deps import get_current_admin_user, get_db
-from app.models import Product, User
-from app.schemas import ProductCreate, ProductPublic, ProductUpdate
+from app.models import Product, Review, User
+from app.schemas import ProductCreate, ProductPublic, ProductUpdate, ReviewCreate, ReviewPublic
 
 public_router = APIRouter(prefix="/products", tags=["products"])
 admin_router = APIRouter(prefix="/admin/products", tags=["admin-products"])
+
+
+def recompute_product_rating(db: Session, product_id: int) -> None:
+    """Keep a product's rating/review-count in sync with its actual reviews."""
+    avg, total = db.execute(
+        select(func.avg(Review.rating), func.count(Review.id)).where(Review.product_id == product_id)
+    ).one()
+    product = db.get(Product, product_id)
+    if product is None:
+        return
+    product.rating = round(float(avg), 1) if avg is not None else 0.0
+    product.reviews = int(total or 0)
+    db.commit()
 
 
 @public_router.get("", response_model=list[ProductPublic])
@@ -24,6 +37,38 @@ def get_product(slug: str, db: Session = Depends(get_db)) -> ProductPublic:
     if p is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
     return ProductPublic.model_validate(p)
+
+
+@public_router.get("/{slug}/reviews", response_model=list[ReviewPublic])
+def list_reviews(slug: str, db: Session = Depends(get_db)) -> list[ReviewPublic]:
+    p = db.execute(select(Product).where(Product.slug == slug, Product.active.is_(True))).scalar_one_or_none()
+    if p is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
+    rows = (
+        db.execute(select(Review).where(Review.product_id == p.id).order_by(Review.created_at.desc()))
+        .scalars()
+        .all()
+    )
+    return [ReviewPublic.model_validate(r) for r in rows]
+
+
+@public_router.post("/{slug}/reviews", response_model=ReviewPublic, status_code=status.HTTP_201_CREATED)
+def create_review(slug: str, body: ReviewCreate, db: Session = Depends(get_db)) -> ReviewPublic:
+    p = db.execute(select(Product).where(Product.slug == slug, Product.active.is_(True))).scalar_one_or_none()
+    if p is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
+    review = Review(
+        product_id=p.id,
+        author_name=body.author_name,
+        rating=body.rating,
+        title=body.title,
+        body=body.body,
+    )
+    db.add(review)
+    db.commit()
+    db.refresh(review)
+    recompute_product_rating(db, p.id)
+    return ReviewPublic.model_validate(review)
 
 
 @admin_router.get("", response_model=list[ProductPublic])
